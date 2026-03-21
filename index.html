@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Générateur de Pitch F2F Gratuit — BABYLON</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --blue-mid: #3b82f6;
+      --blue-dark: #1d4ed8;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,.08), 0 4px 10px rgba(0,0,0,.04);
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    .nav {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--gray-900);
+    }
+    .nav-logo span { color: var(--blue); }
+    .nav-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--blue-light);
+      color: var(--blue);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* HERO */
+    .hero {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 900;
+      color: var(--gray-900);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .hero h1 span { color: var(--blue); }
+    .hero-sub {
+      font-size: 16px;
+      color: var(--gray-500);
+      max-width: 520px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-val { font-size: 22px; font-weight: 900; color: var(--gray-900); }
+    .hero-stat-label { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+    /* PROGRESS STEPS */
+    .progress-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 24px 0;
+    }
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 32px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .step:last-child { flex: 0; }
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      color: var(--gray-400);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .step-dot.active {
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 0 0 4px rgba(37,99,235,0.15);
+    }
+    .step-dot.done {
+      background: var(--green);
+      color: white;
+    }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--gray-200);
+      transition: background 0.3s;
+    }
+    .step-line.done { background: var(--green); }
+
+    /* CARD */
+    .card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title-num {
+      width: 22px;
+      height: 22px;
+      background: var(--blue);
+      color: white;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* FORM ELEMENTS */
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .option-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .option-btn {
+      padding: 10px 14px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-700);
+      text-align: center;
+      transition: all 0.15s;
+      line-height: 1.3;
+    }
+    .option-btn:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+    .option-btn.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); font-weight: 700; }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--gray-900);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--blue); }
+    .form-input::placeholder { color: var(--gray-400); }
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+    }
+    .form-group { margin-bottom: 16px; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px 20px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.35); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* PITCH OUTPUT */
+    .pitch-output {
+      display: none;
+    }
+    .pitch-section {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .pitch-section-header {
+      padding: 12px 20px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pitch-section-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: var(--blue-light);
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+    .pitch-section-body {
+      padding: 20px;
+    }
+    .pitch-text {
+      font-size: 15px;
+      color: var(--gray-700);
+      line-height: 1.7;
+      font-style: italic;
+    }
+    .pitch-text strong { color: var(--gray-900); font-style: normal; }
+
+    /* LOCKED SECTION */
+    .locked-section {
+      background: white;
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .locked-preview {
+      filter: blur(3px);
+      user-select: none;
+      pointer-events: none;
+      opacity: 0.6;
+      margin-bottom: 20px;
+    }
+    .locked-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(2px);
+    }
+    .lock-icon { font-size: 28px; margin-bottom: 10px; }
+    .lock-title { font-size: 16px; font-weight: 800; color: var(--gray-900); margin-bottom: 6px; }
+    .lock-sub { font-size: 13px; color: var(--gray-500); margin-bottom: 16px; }
+    .lock-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .lock-feature-tag {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--gray-100);
+      color: var(--gray-700);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .btn-unlock {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-unlock:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+    /* EMAIL CAPTURE MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 36px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: fadeUp 0.25s ease;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .modal-icon { font-size: 36px; margin-bottom: 16px; }
+    .modal-title { font-size: 20px; font-weight: 800; color: var(--gray-900); margin-bottom: 8px; }
+    .modal-sub { font-size: 14px; color: var(--gray-500); line-height: 1.6; margin-bottom: 24px; }
+    .modal-features { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .modal-features li { font-size: 13px; color: var(--gray-700); display: flex; align-items: center; gap: 8px; }
+    .modal-features li::before { content: '✓'; color: var(--green); font-weight: 800; }
+    .modal-input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .modal-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal-input:focus { border-color: var(--blue); }
+    .btn-modal-submit {
+      width: 100%;
+      padding: 13px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-modal-submit:hover { background: var(--blue-dark); }
+    .modal-disclaimer { font-size: 11px; color: var(--gray-400); text-align: center; margin-top: 10px; }
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: none; border: none;
+      font-size: 20px; cursor: pointer;
+      color: var(--gray-400);
+    }
+    .modal-success { text-align: center; display: none; }
+    .success-icon { font-size: 48px; margin-bottom: 16px; }
+    .success-title { font-size: 20px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+    .success-sub { font-size: 14px; color: var(--gray-500); }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 12px;
+      color: var(--gray-400);
+      border-top: 1px solid var(--gray-200);
+      margin-top: 24px;
+    }
+    .footer a { color: var(--blue); text-decoration: none; }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .option-grid { grid-template-columns: repeat(2, 1fr); }
+      .option-grid.cols-2 { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 26px; }
+      .modal { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">BABYLON<span>.</span></div>
+  <div class="nav-badge">🎯 Générateur de Pitch</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Outil gratuit — Sans inscription</div>
+  <h1>Générez votre <span>pitch de collecte</span><br>en 60 secondes</h1>
+  <p class="hero-sub">Répondez à 4 questions et obtenez un script personnalisé pour convertir plus de donateurs.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-val">12</div>
+      <div class="hero-stat-label">types de causes</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">4×</div>
+      <div class="hero-stat-label">profils donateurs</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">100%</div>
+      <div class="hero-stat-label">gratuit & immédiat</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN FORM -->
+<div class="progress-wrap" id="form-section">
+
+  <!-- PROGRESS -->
+  <div class="steps" id="steps">
+    <div class="step-dot active" id="step-1">1</div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="step-2">2</div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="step-3">3</div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-dot" id="step-4">4</div>
+  </div>
+
+  <!-- STEP 1: Cause -->
+  <div class="card" id="q1">
+    <div class="card-title">
+      <div class="card-title-num">1</div>
+      Quel type de cause représentez-vous ?
+    </div>
+    <div class="option-grid">
+      <button class="option-btn" onclick="selectOption('cause', 'Humanitaire', this)">❤️ Humanitaire</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Environnement', this)">🌿 Environnement</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Social', this)">🤝 Social</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Santé', this)">🏥 Santé</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Éducation', this)">📚 Éducation</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Animal', this)">🐾 Animal</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Culture & Patrimoine', this)">🎭 Culture & Patrimoine</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Recherche médicale', this)">🔬 Recherche médicale</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Handicap', this)">♿ Handicap</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Personnes âgées', this)">🏡 Personnes âgées</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Enfance', this)">🧒 Enfance</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Autre', this)">✨ Autre</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Profil donateur -->
+  <div class="card" id="q2">
+    <div class="card-title">
+      <div class="card-title-num">2</div>
+      Quel est votre profil donateur cible ?
+    </div>
+    <div class="option-grid cols-2">
+      <button class="option-btn" onclick="selectOption('profile', '18-30 ans', this)">🎓 18–30 ans</button>
+      <button class="option-btn" onclick="selectOption('profile', '30-50 ans', this)">👔 30–50 ans</button>
+      <button class="option-btn" onclick="selectOption('profile', '50+ ans', this)">🏡 50+ ans</button>
+      <button class="option-btn" onclick="selectOption('profile', 'Grand donateur', this)">💎 Grand donateur</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Impact metric -->
+  <div class="card" id="q3">
+    <div class="card-title">
+      <div class="card-title-num">3</div>
+      Quel est votre indicateur d'impact #1 ?
+    </div>
+    <div class="form-group">
+      <label class="form-label">Exemple : "Un repas pour €1" ou "1 arbre planté par mois"</label>
+      <input type="text" class="form-input" id="impact-metric" placeholder="Votre chiffre clé..." oninput="updateImpact(this.value)"/>
+    </div>
+  </div>
+
+  <!-- STEP 4: Type de collecte -->
+  <div class="card" id="q4">
+    <div class="card-title">
+      <div class="card-title-num">4</div>
+      Quel est votre canal de collecte ?
+    </div>
+    <div class="option-grid">
+      <button class="option-btn" onclick="selectOption('calltype', 'F2F porte-à-porte', this)">🚪 F2F Porte-à-porte</button>
+      <button class="option-btn" onclick="selectOption('calltype', 'Télémarketing', this)">📞 Télémarketing</button>
+      <button class="option-btn" onclick="selectOption('calltype', 'Email', this)">✉️ Email</button>
+    </div>
+  </div>
+
+  <!-- GENERATE BTN -->
+  <button class="btn-primary" id="generate-btn" onclick="generatePitch()" disabled>
+    ⚡ Générer mon pitch personnalisé
+  </button>
+
+</div>
+
+<!-- PITCH OUTPUT -->
+<div class="progress-wrap pitch-output" id="pitch-output">
+
+  <div style="text-align:center;margin-bottom:24px;">
+    <div style="font-size:28px;margin-bottom:8px;">🎯</div>
+    <div style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:6px;">Votre pitch est prêt !</div>
+    <div style="font-size:14px;color:var(--gray-500);">Script personnalisé pour <span id="output-profile" style="font-weight:700;color:var(--blue);"></span> — cause <span id="output-cause" style="font-weight:700;color:var(--blue);"></span></div>
+  </div>
+
+  <!-- ACCROCHE -->
+  <div class="pitch-section">
+    <div class="pitch-section-header">
+      <span class="pitch-section-tag">Phase 1</span>
+      <span style="font-size:13px;font-weight:700;color:var(--gray-700);">ACCROCHE</span>
+    </div>
+    <div class="pitch-section-body">
+      <p class="pitch-text" id="pitch-accroche"></p>
+    </div>
+  </div>
+
+  <!-- ARGUMENT -->
+  <div class="pitch-section">
+    <div class="pitch-section-header">
+      <span class="pitch-section-tag">Phase 2</span>
+      <span style="font-size:13px;font-weight:700;color:var(--gray-700);">ARGUMENT PRINCIPAL</span>
+    </div>
+    <div class="pitch-section-body">
+      <p class="pitch-text" id="pitch-argument"></p>
+    </div>
+  </div>
+
+  <!-- OBJECTION -->
+  <div class="pitch-section">
+    <div class="pitch-section-header">
+      <span class="pitch-section-tag">Phase 3</span>
+      <span style="font-size:13px;font-weight:700;color:var(--gray-700);">GESTION DE L'OBJECTION PRINCIPALE</span>
+    </div>
+    <div class="pitch-section-body">
+      <p class="pitch-text" id="pitch-objection"></p>
+    </div>
+  </div>
+
+  <!-- CLÔTURE -->
+  <div class="pitch-section">
+    <div class="pitch-section-header">
+      <span class="pitch-section-tag">Phase 4</span>
+      <span style="font-size:13px;font-weight:700;color:var(--gray-700);">CLÔTURE</span>
+    </div>
+    <div class="pitch-section-body">
+      <p class="pitch-text" id="pitch-cloture"></p>
+    </div>
+  </div>
+
+  <!-- LOCKED SECTION -->
+  <div class="locked-section" style="position:relative;min-height:200px;">
+    <div class="locked-preview">
+      <div style="margin-bottom:12px;padding:12px 16px;background:var(--gray-50);border-radius:8px;font-size:13px;color:var(--gray-500);">Phase 5 — Gestion objection avancée</div>
+      <div style="padding:12px 16px;background:var(--gray-50);border-radius:8px;font-size:13px;color:var(--gray-500);">Phase 6 — Réengagement & suivi post-signature</div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <div style="flex:1;padding:10px;background:var(--gray-50);border-radius:8px;font-size:12px;color:var(--gray-400);">Variante grand donateur</div>
+        <div style="flex:1;padding:10px;background:var(--gray-50);border-radius:8px;font-size:12px;color:var(--gray-400);">Variante email</div>
+      </div>
+    </div>
+    <div class="locked-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Débloquez le pitch complet</div>
+      <div class="lock-sub">Recevez le script 6 phases complet par email — gratuit</div>
+      <div class="lock-features">
+        <span class="lock-feature-tag">Script complet 6 phases</span>
+        <span class="lock-feature-tag">5 réponses aux objections</span>
+        <span class="lock-feature-tag">Variantes par profil</span>
+        <span class="lock-feature-tag">Version PDF téléchargeable</span>
+      </div>
+      <button class="btn-unlock" onclick="openModal()">📨 Recevoir le pitch complet par email</button>
+    </div>
+  </div>
+
+  <button class="btn-primary" style="background:white;color:var(--blue);border:2px solid var(--blue);margin-top:8px;" onclick="resetForm()">
+    ← Générer un nouveau pitch
+  </button>
+
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modal-form-wrap">
+      <div class="modal-icon">📨</div>
+      <div class="modal-title">Votre pitch complet arrive</div>
+      <div class="modal-sub">Recevez le script 6 phases avec toutes les variantes et le guide des objections.</div>
+      <ul class="modal-features">
+        <li>Script complet — 6 phases détaillées</li>
+        <li>5 réponses aux objections les plus fréquentes</li>
+        <li>Variantes personnalisées par profil donateur</li>
+        <li>Version PDF téléchargeable et imprimable</li>
+      </ul>
+      <div class="modal-input-row">
+        <input type="text" class="modal-input" id="modal-name" placeholder="Votre prénom" style="flex:0.8;"/>
+        <input type="email" class="modal-input" id="modal-email" placeholder="votre@email.fr" style="flex:1.2;"/>
+      </div>
+      <button class="btn-modal-submit" onclick="submitEmail()">Recevoir mon pitch complet →</button>
+      <p class="modal-disclaimer">🔒 Zéro spam. Désabonnement en un clic.</p>
+    </div>
+    <div class="modal-success" id="modal-success">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Votre pitch complet arrive dans 2 minutes ✓</div>
+      <div class="success-sub">Vérifiez votre boîte mail (et les spams). Bonne collecte !</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>Outil propulsé par <strong>BABYLON Agency</strong> · Experts en collecte F2F depuis 2018</p>
+  <p style="margin-top:6px;"><a href="/churn-saas">ruaj.ai</a> · <a href="/relance-ai">relance.ai</a> · <a href="/causework">CauseWork</a> · <a href="/academy">collecte.ai</a></p>
+</footer>
+
+<script>
+  const selections = { cause: null, profile: null, impact: '', calltype: null };
+
+  function selectOption(field, value, btn) {
+    selections[field] = value;
+    const parent = btn.closest('.option-grid');
+    parent.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    checkReady();
+    updateStepIndicators();
+  }
+
+  function updateImpact(val) {
+    selections.impact = val;
+    checkReady();
+  }
+
+  function checkReady() {
+    const ready = selections.cause && selections.profile && selections.impact.trim() && selections.calltype;
+    document.getElementById('generate-btn').disabled = !ready;
+  }
+
+  function updateStepIndicators() {
+    const dots = ['step-1','step-2','step-3','step-4'];
+    const filled = [selections.cause, selections.profile, selections.impact.trim(), selections.calltype];
+    dots.forEach((id, i) => {
+      const el = document.getElementById(id);
+      const lineEl = document.getElementById(`line-${i+1}`);
+      if (filled[i]) {
+        el.classList.remove('active');
+        el.classList.add('done');
+        el.textContent = '✓';
+        if (lineEl) lineEl.classList.add('done');
+        // activate next
+        const next = document.getElementById(`step-${i+2}`);
+        if (next && !next.classList.contains('done')) next.classList.add('active');
+      }
+    });
+  }
+
+  const ARGUMENTS = {
+    'Humanitaire': {
+      '18-30 ans': "Votre génération comprend mieux que personne que les crises humanitaires ne connaissent pas de frontières. Avec seulement quelques euros par mois, vous permettez à nos équipes de rester présentes dans les zones les plus difficiles d'accès — là où personne d'autre ne va.",
+      '30-50 ans': "En tant qu'actif engagé, votre soutien régulier nous permet de planifier nos interventions d'urgence sur le long terme. Chaque virement mensuel devient du matériel médical, de la nourriture, un toit pour une famille déplacée.",
+      '50+ ans': "Vous avez traversé des décennies d'histoire et vu la différence que l'aide concrète peut faire. Votre soutien mensuel représente la continuité d'un engagement — et une aide qui arrive directement sur le terrain, sans intermédiaire superflu.",
+      'Grand donateur': "Votre contribution transformatrice nous permet d'ouvrir de nouveaux programmes — pas seulement d'aider au jour le jour, mais de construire des solutions durables. Nous offrons un suivi personnalisé et un impact reporting complet sur votre donation."
+    },
+    'Environnement': {
+      '18-30 ans': "Vous allez hériter de cette planète. Ce n'est pas un cliché — c'est une réalité que votre génération ressent chaque été. Votre don mensuel finance des actions concrètes : reforestation, protection des océans, lobbying légal pour des lois climatiques plus fortes.",
+      '30-50 ans': "Vous construisez aujourd'hui le monde que vos enfants vont habiter. Votre soutien régulier finance nos projets de terrain — pas des études ou des rapports, mais des arbres plantés, des espèces protégées, des zones préservées.",
+      '50+ ans': "Vous avez vu les changements de première main — les saisons qui se décalent, les espèces qui disparaissent. Votre soutien donne à nos équipes la stabilité financière pour agir dans la durée, là où un don ponctuel ne suffit pas.",
+      'Grand donateur': "Un partenariat avec vous, c'est la capacité de lancer un programme entier — nommer une réserve, parrainer une campagne légale, ou financer une étude scientifique qui fait bouger les lignes au niveau international."
+    },
+    'Social': {
+      '18-30 ans': "L'exclusion sociale, vous en êtes plus proches que vous le croyez — vous connaissez forcément quelqu'un en difficulté. Votre don mensuel finance de l'accompagnement humain concret : hébergement, insertion pro, aide alimentaire dans votre propre ville.",
+      '30-50 ans': "La précarité a augmenté de 18% en France depuis 2019. Votre soutien régulier nous permet de maintenir nos équipes d'accompagnateurs dans les quartiers les plus touchés — un lien humain qu'aucun algorithme ne peut remplacer.",
+      '50+ ans': "Dans notre société qui vieillit et se fragmente, les liens de solidarité ont plus de valeur que jamais. Votre don mensuel finance des actions très concrètes, près de chez vous — avec un compte-rendu d'impact régulier.",
+      'Grand donateur': "Un engagement à votre niveau nous permet de lancer de nouveaux dispositifs — un centre d'accueil, un programme d'insertion professionnelle, une résidence intergénérationnelle. Nous travaillerons avec vous pour créer un impact qui porte votre vision."
+    },
+    'Santé': {
+      '18-30 ans': "La recherche médicale avance grâce à des milliers de petits dons réguliers. Votre soutien mensuel, mis en commun avec des milliers de donateurs, finance des essais cliniques qui n'auraient pas lieu autrement — pour des maladies qui frappent n'importe qui, à n'importe quel âge.",
+      '30-50 ans': "Statistiquement, quelqu'un dans votre entourage a été touché par la maladie. Votre don régulier finance la recherche et l'accompagnement des patients aujourd'hui — pour que les traitements de demain soient là quand on en aura besoin.",
+      '50+ ans': "La santé devient une priorité concrète à votre âge — vous le savez mieux que personne. Votre soutien finance à la fois la recherche de pointe et les services d'accompagnement humain pour les patients et leurs familles.",
+      'Grand donateur': "Une donation à ce niveau peut financer une chaire de recherche, un équipement hospitalier spécifique, ou nommer un programme clinique. Nous vous proposons un partenariat avec notre directeur scientifique pour un impact mesurable et visible."
+    },
+    'Éducation': {
+      '18-30 ans': "Vous avez bénéficié de l'éducation pour construire votre vie. Des millions d'enfants en France et dans le monde n'ont pas cette chance. Votre don mensuel finance des fournitures, des repas, des professeurs formés — les briques de base d'un avenir différent.",
+      '30-50 ans': "En tant que parent ou futur parent, vous savez ce que l'éducation représente. Votre soutien régulier finance des programmes concrets : soutien scolaire, accès au numérique, bourses pour les élèves les plus méritants mais les moins aidés.",
+      '50+ ans': "Vous avez construit votre carrière grâce à l'éducation. Transmettre cette chance à la génération suivante est l'un des investissements les plus durables qui soit. Votre don mensuel s'inscrit dans un projet éducatif sur le long terme.",
+      'Grand donateur': "À ce niveau d'engagement, vous pouvez parrainer une école entière, financer une année de bourse pour plusieurs élèves, ou lancer un programme de mentorat. Un legs éducatif concret qui porte votre nom."
+    },
+    'Animal': {
+      '18-30 ans': "Vous grandissez dans une génération qui considère la condition animale comme une cause sérieuse — et vous avez raison. Votre don mensuel finance des refuges, des soins vétérinaires urgents, et des campagnes de stérilisation qui brisent le cycle de l'errance.",
+      '30-50 ans': "Un soutien régulier permet à nos équipes de maintenir des refuges ouverts 365 jours par an. Votre don finance directement de la nourriture, des soins vétérinaires et des familles d'accueil — des vies sauvées chaque mois.",
+      '50+ ans': "La protection animale, c'est aussi le reflet de notre humanité. Votre soutien mensuel permet de maintenir des actions concrètes : sauvetage, soin, adoption — avec un reporting régulier sur chaque animal aidé.",
+      'Grand donateur': "À ce niveau, vous pouvez parrainer un programme entier — une clinique vétérinaire mobile, un refuge rénové, ou une campagne de sensibilisation nationale. Un partenariat visible, tracé, avec impact mesurable."
+    },
+    'Culture & Patrimoine': {
+      '18-30 ans': "La culture façonne qui vous êtes — la musique que vous écoutez, les films qui vous ont marqué, les lieux qui vous inspirent. Votre don mensuel permet à des artistes et des lieux culturels de survivre là où les subventions s'arrêtent.",
+      '30-50 ans': "Les institutions culturelles et le patrimoine historique font partie de ce que vous transmettrez à vos enfants. Votre soutien régulier finance la restauration, la médiation culturelle, et l'accès à la culture pour tous.",
+      '50+ ans': "Vous avez vu des lieux et des traditions disparaître. Votre don mensuel contribue à les préserver — pas dans des musées fermés, mais vivants, accessibles, transmis à la prochaine génération.",
+      'Grand donateur': "Un mécénat à votre niveau peut restaurer un monument, financer une résidence d'artiste, ou nommer une salle. Nous construirons avec vous un partenariat qui reflète votre vision culturelle et votre leg."
+    },
+    'Recherche médicale': {
+      '18-30 ans': "Chaque maladie rare, chaque cancer sans traitement — derrière, il y a des familles qui attendent. La recherche avance grâce à des milliers de petits dons réguliers comme le vôtre. Votre soutien mensuel finance des essais cliniques qui n'auraient pas lieu autrement.",
+      '30-50 ans': "Statistiquement, quelqu'un dans votre entourage sera touché. La recherche médicale progresse grâce à des flux réguliers, pas des dons ponctuels. Votre soutien mensuel donne aux chercheurs la stabilité pour aller au bout de leurs travaux.",
+      '50+ ans': "La recherche médicale a transformé des diagnostics fatals en maladies chroniques gérables. Votre don mensuel finance les percées de demain — pour vous, pour vos proches, pour les générations qui suivent.",
+      'Grand donateur': "À ce niveau, vous pouvez financer une chaire de recherche, équiper un laboratoire, ou nommer un programme clinique. Nous vous connecterons directement avec l'équipe scientifique pour un suivi personnalisé de votre impact."
+    },
+    'Handicap': {
+      '18-30 ans': "Le handicap concerne 12 millions de personnes en France — vous en connaissez forcément. Votre don mensuel finance des dispositifs d'accessibilité, de l'accompagnement humain, et des outils qui changent concrètement le quotidien.",
+      '30-50 ans': "L'inclusion des personnes handicapées n'est pas qu'une obligation légale — c'est une valeur. Votre soutien régulier permet à nos équipes de maintenir des services d'accompagnement là où l'État n'arrive pas : emploi, logement, lien social.",
+      '50+ ans': "Avec l'âge, le risque de handicap augmente pour nous tous. Votre soutien mensuel finance des services dont vous, vos proches ou vos voisins pourraient avoir besoin — et qui n'existeront que si des gens comme vous les soutiennent.",
+      'Grand donateur': "Un engagement à votre niveau peut financer un poste d'auxiliaire de vie, adapter un logement entier, ou lancer un programme d'insertion professionnelle. Un impact humain direct, documenté, et qui porte votre vision."
+    },
+    'Personnes âgées': {
+      '18-30 ans': "L'isolement des personnes âgées est une des crises silencieuses de notre époque. Votre don mensuel finance des visites à domicile, des liens numériques, et des activités qui rompent la solitude — une heure de présence humaine peut changer une semaine.",
+      '30-50 ans': "Vos parents ou grands-parents vieillissent. Vous savez ce que représente le maintien du lien, du soin, de la dignité. Votre soutien régulier finance des équipes qui font exactement ça — là où la famille ne peut pas toujours être présente.",
+      '50+ ans': "Vous voyez cet enjeu de près. Votre don mensuel finance du lien humain concret : visites, téléphonie, aide aux repas, accompagnement médical. Des actions qui maintiennent l'autonomie et la dignité bien plus longtemps.",
+      'Grand donateur': "À ce niveau, vous pouvez financer un programme de lutte contre l'isolement à l'échelle d'un quartier ou d'une commune. Nous vous proposerons un partenariat avec impact reporting détaillé et visibilité sur les bénéficiaires."
+    },
+    'Enfance': {
+      '18-30 ans': "Les premières années définissent une vie entière. Votre don mensuel finance de l'éveil, du soutien parental, de la protection pour des enfants qui n'ont pas eu la chance d'un environnement stable — un investissement dans la personne qu'ils deviendront.",
+      '30-50 ans': "En tant que parent ou futur parent, vous savez ce que représente un enfant entouré, stimulé, protégé. Votre soutien régulier finance des programmes d'aide à l'enfance en situation de vulnérabilité — les enfants qui en ont le plus besoin.",
+      '50+ ans': "Protéger les enfants vulnérables, c'est l'engagement le plus universel qui soit. Votre don mensuel finance des équipes qui interviennent concrètement : protection, soins, accès à l'éducation, reconstruction familiale.",
+      'Grand donateur': "À votre niveau d'engagement, vous pouvez parrainer un programme entier — une maison d'enfants, un programme de parrainage, ou une campagne de prévention nationale. Un héritage concret qui porte votre valeurs."
+    },
+    'Autre': {
+      '18-30 ans': "Les nouvelles générations s'engagent différemment — et vous avez choisi d'agir concrètement. Votre don mensuel transforme votre engagement en impact réel, mesurable, documenté.",
+      '30-50 ans': "Vous avez les moyens et la conscience de la différence que peut faire un engagement régulier. Votre soutien mensuel est l'outil le plus efficace pour une cause — bien plus qu'un don ponctuel.",
+      '50+ ans': "Une vie d'expérience vous a appris que les engagements durables font la différence. Votre don mensuel donne à cette cause la stabilité financière pour planifier et agir dans le long terme.",
+      'Grand donateur': "À votre niveau, votre engagement peut définir la direction entière d'un programme ou d'une initiative. Nous vous proposerons un partenariat stratégique avec impact reporting personnalisé."
+    }
+  };
+
+  const OBJECTIONS = {
+    'Humanitaire': '"Je ne suis pas sûr que l\'argent arrive vraiment sur le terrain." — Je vous comprends complètement, et c\'est la bonne question à poser. Nous publions nos comptes certifiés chaque année et plus de 82% de nos ressources vont directement au terrain. Je peux vous montrer notre rapport annuel — les chiffres parlent d\'eux-mêmes.',
+    'Environnement': '"Il y a tellement de problèmes, je ne sais pas si ça change quelque chose." — Je comprends ce sentiment. C\'est pour ça qu\'on se concentre sur des projets très concrets avec des résultats mesurables : X hectares préservés, X tonnes de CO₂ compensées. Chaque don est tracé et rapporté.',
+    'Social': '"Il y a déjà des aides sociales de l\'État pour ça." — Vous avez raison que l\'État aide, mais les associations comblent ce que les services publics ne peuvent pas couvrir — l\'accompagnement humain, la présence quotidienne, les petits accidents de la vie. On est là là où l\'État ne peut pas aller.',
+    'Santé': '"Je préfère donner une fois que je serai sûr d\'avoir les moyens." — Je comprends. Mais c\'est justement l\'avantage du don mensuel : vous choisissez un montant qui n\'impacte pas votre quotidien — même 5€ par mois fait partie d\'un flux collectif qui finance la recherche en continu.',
+    'Éducation': '"Je donne déjà à d\'autres causes." — C\'est formidable, vraiment. Et l\'éducation, c\'est le multiplicateur — un enfant qui accède à l\'éducation change non seulement sa vie, mais celle de toute sa communauté. Même un petit montant supplémentaire a un effet démultiplié ici.',
+    'Animal': '"Je préfère m\'occuper des problèmes humains d\'abord." — Je comprends cette priorité. Et pourtant, protéger les animaux et aider les humains ne s\'opposent pas — la maltraitance animale est souvent corrélée à d\'autres formes de violence. Et pour beaucoup de gens, un animal c\'est leur seul lien affectif. Votre don agit sur les deux.',
+    'Culture & Patrimoine': '"La culture c\'est un luxe en ce moment." — Je comprends. Mais justement en temps de crise, la culture devient essentielle — c\'est ce qui maintient le lien social, la mémoire collective, l\'identité. Et nos programmes touchent d\'abord les publics qui n\'ont pas les moyens de payer une entrée.',
+    'Recherche médicale': '"Les labos pharmaceutiques ont assez d\'argent." — C\'est vrai pour les médicaments rentables. Mais la recherche sur les maladies rares, les cancers pédiatriques, les pathologies complexes — elle dépend quasi exclusivement des dons. C\'est là que votre soutien fait la différence.',
+    'Handicap': '"Il y a des aides de l\'État pour les personnes handicapées." — Oui, et elles ne couvrent qu\'une partie des besoins réels. Nos équipes comblent ce que les administrations ne peuvent pas faire : l\'accompagnement humain quotidien, l\'inclusion sociale, les petits ajustements qui changent tout.',
+    'Personnes âgées': '"Ma famille s\'en occupe." — C\'est formidable d\'avoir ce soutien familial. Mais des millions de personnes âgées n\'ont personne. Votre don finance du lien humain pour ceux qui sont seuls — et les équipes qui font ça 365 jours par an, le soir, le week-end, quand les familles ne peuvent pas.',
+    'Enfance': '"Il y a l\'aide sociale à l\'enfance pour ça." — L\'ASE fait ce qu\'elle peut avec des moyens limités. Nos équipes interviennent en complément : prévention, soutien à la parentalité, activités, lien humain — ce que les services publics saturés ne peuvent pas assurer seuls.',
+    'Autre': '"Je vais y réfléchir et vous recontacter." — Bien sûr, je respecte ça. Mais permettez-moi de vous laisser juste une chose : le don mensuel, vous pouvez l\'arrêter n\'importe quand, sans justification. C\'est un engagement souple, pas un contrat. Et chaque mois compte.'
+  };
+
+  const MONTANTS = {
+    '18-30 ans': '€5 à €15',
+    '30-50 ans': '€15 à €30',
+    '50+ ans': '€20 à €50',
+    'Grand donateur': '€100 à €500'
+  };
+
+  function generatePitch() {
+    const { cause, profile, impact, calltype } = selections;
+    const name = document.getElementById('modal-name').value || 'votre prénom';
+
+    // Update header
+    document.getElementById('output-profile').textContent = profile;
+    document.getElementById('output-cause').textContent = cause;
+
+    // ACCROCHE
+    const accroche = `"Bonjour, je m'appelle <strong>[votre prénom]</strong>. Je travaille avec <strong>${cause}</strong> et je voulais vous poser une question rapide — est-ce que <em>${impact || 'notre impact'}</em> vous parle ?"`;
+    document.getElementById('pitch-accroche').innerHTML = accroche;
+
+    // ARGUMENT
+    const arg = (ARGUMENTS[cause] && ARGUMENTS[cause][profile]) || ARGUMENTS['Autre']['30-50 ans'];
+    document.getElementById('pitch-argument').textContent = arg;
+
+    // OBJECTION
+    const obj = OBJECTIONS[cause] || OBJECTIONS['Autre'];
+    document.getElementById('pitch-objection').textContent = obj;
+
+    // CLÔTURE
+    const montant = MONTANTS[profile] || '€10 à €30';
+    const cloture = `"Est-ce que ${montant} par mois serait envisageable pour vous ? C'est moins qu'un café par semaine — et un impact direct sur [${cause.toLowerCase()}]."`;
+    document.getElementById('pitch-cloture').textContent = cloture;
+
+    // Show output
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('pitch-output').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetForm() {
+    document.getElementById('pitch-output').style.display = 'none';
+    document.getElementById('form-section').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function openModal() {
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+
+  async function submitEmail() {
+    const name = document.getElementById('modal-name').value.trim();
+    const email = document.getElementById('modal-email').value.trim();
+    if (!email || !email.includes('@')) {
+      alert('Veuillez entrer une adresse email valide.');
+      return;
+    }
+
+    const lead = {
+      email,
+      data: {
+        name,
+        cause: selections.cause,
+        profile: selections.profile,
+        impact: selections.impact,
+        calltype: selections.calltype,
+        product: 'pitch-generator'
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    // Save via fetch to leads endpoint (falls back to localStorage if no server)
+    try {
+      await fetch('/api/leads/pitch-generator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lead)
+      });
+    } catch(e) {
+      // Store locally as fallback
+      const stored = JSON.parse(localStorage.getItem('pitch-leads') || '[]');
+      stored.push(lead);
+      localStorage.setItem('pitch-leads', JSON.stringify(stored));
+    }
+
+    document.getElementById('modal-form-wrap').style.display = 'none';
+    document.getElementById('modal-success').style.display = 'block';
+  }
+</script>
+</body>
+</html>
