@@ -442,15 +442,30 @@
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-logo">BABYLON<span>.</span></div>
-  <div class="nav-badge">🎯 Générateur de Pitch</div>
+  <div class="nav-logo">
+    <svg viewBox="0 0 200 36" style="height:28px;display:block;" xmlns="http://www.w3.org/2000/svg">
+      <!-- Speech bubble icon -->
+      <rect x="0" y="2" width="28" height="22" rx="5" fill="#f59e0b"/>
+      <polygon points="6,24 4,34 16,24" fill="#f59e0b"/>
+      <circle cx="7" cy="13" r="2.5" fill="white"/>
+      <circle cx="14" cy="13" r="2.5" fill="white"/>
+      <circle cx="21" cy="13" r="2.5" fill="white"/>
+      <!-- Wordmark -->
+      <text x="36" y="25" font-family="Inter,system-ui,sans-serif" font-weight="900" font-size="17" fill="#111827" letter-spacing="1">BABYLON</text>
+      <text x="120" y="25" font-family="Inter,system-ui,sans-serif" font-weight="400" font-size="13" fill="#f59e0b" letter-spacing="0.5"> Pitch</text>
+    </svg>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="nav-badge">🎯 Générateur de Pitch</div>
+    <button class="lang-toggle" onclick="toggleLang()" style="background:transparent;border:1px solid var(--gray-300);color:var(--gray-500);padding:5px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.05em;">EN</button>
+  </div>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-eyebrow">Outil gratuit — Sans inscription</div>
-  <h1>Générez votre <span>pitch de collecte</span><br>en 60 secondes</h1>
-  <p class="hero-sub">Répondez à 4 questions et obtenez un script personnalisé pour convertir plus de donateurs.</p>
+  <div class="hero-eyebrow" data-fr="Outil gratuit — Sans inscription" data-en="Free tool — No registration required">Outil gratuit — Sans inscription</div>
+  <h1 data-fr="Votre pitch F2F<br><span>en 60 secondes.</span>" data-en="Your F2F pitch<br><span>in 60 seconds.</span>">Votre pitch F2F<br><span>en 60 secondes.</span></h1>
+  <p class="hero-sub" data-fr="Répondez à 4 questions et obtenez un script personnalisé pour convertir plus de donateurs." data-en="Answer 4 questions and get a personalised script to convert more donors.">Répondez à 4 questions et obtenez un script personnalisé pour convertir plus de donateurs.</p>
   <div class="hero-stats">
     <div class="hero-stat">
       <div class="hero-stat-val">12</div>
@@ -663,7 +678,7 @@
 
 <!-- FOOTER -->
 <footer class="footer">
-  <p>Outil propulsé par <strong>BABYLON Agency</strong> · Experts en collecte F2F depuis 2018</p>
+  <p data-fr="Outil propulsé par BABYLON Group · Experts en collecte F2F depuis 2018 · 🔒 Données hébergées en France · RGPD conforme" data-en="Powered by BABYLON Group · F2F fundraising experts since 2018 · 🔒 Data hosted in France · GDPR compliant">Outil propulsé par <strong>BABYLON Group</strong> · Experts en collecte F2F depuis 2018 · 🔒 Données hébergées en France · RGPD conforme</p>
   <p style="margin-top:6px;"><a href="/churn-saas">ruaj.ai</a> · <a href="/relance-ai">relance.ai</a> · <a href="/causework">CauseWork</a> · <a href="/academy">collecte.ai</a></p>
 </footer>
 
@@ -890,6 +905,17 @@
 
     document.getElementById('modal-form-wrap').style.display = 'none';
     document.getElementById('modal-success').style.display = 'block';
+  }
+</script>
+<script>
+  let currentLang = 'fr';
+  function toggleLang() {
+    currentLang = currentLang === 'fr' ? 'en' : 'fr';
+    document.querySelectorAll('[data-fr]').forEach(el => {
+      el.innerHTML = currentLang === 'fr' ? el.dataset.fr : el.dataset.en;
+    });
+    const toggle = document.querySelector('.lang-toggle');
+    if (toggle) toggle.textContent = currentLang === 'fr' ? 'EN' : 'FR';
   }
 </script>
 </body>
