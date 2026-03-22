@@ -436,7 +436,36 @@
       .hero h1 { font-size: 26px; }
       .modal { padding: 24px; }
     }
-  </style>
+  
+    /* MOBILE — max-width 768px */
+    @media (max-width: 768px) {
+      nav, .navbar, header nav { flex-wrap: wrap; padding: 12px 16px; gap: 8px; }
+      .nav-links, .nav-menu { display: none; }
+      .nav-cta, .btn-nav { font-size: 12px; padding: 8px 14px; }
+      .hero, section.hero { padding: 60px 20px 40px; min-height: auto; }
+      .hero h1, .hero-title { font-size: clamp(28px, 8vw, 48px) !important; line-height: 1.2; }
+      .hero-sub, .hero p { font-size: 15px !important; }
+      .hero-actions, .cta-group { flex-direction: column; gap: 10px; }
+      .hero-actions a, .cta-group a, .hero-actions button { width: 100%; text-align: center; }
+      .grid, .features-grid, .cards-grid, .pricing-grid, .two-col, .three-col, .stats-grid, .testimonials-grid { grid-template-columns: 1fr !important; }
+      section, .section { padding: 40px 20px !important; }
+      .trust-bar, .stats-bar, .social-proof { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+      .feature-card, .card { padding: 20px !important; }
+      .mockup, .dashboard-preview, .browser-mockup { transform: scale(0.7); transform-origin: top center; margin-bottom: -60px; }
+      .pricing-card { margin: 0 !important; }
+      footer, .footer { flex-direction: column; text-align: center; gap: 16px; padding: 24px 20px; }
+      .footer-grid, .footer-cols { grid-template-columns: 1fr 1fr !important; }
+      .calculator, .form-section { padding: 20px !important; }
+      img { max-width: 100%; height: auto; }
+      .particle, .blob, .hero-blob { display: none; }
+      .lang-toggle { font-size: 11px; padding: 4px 8px; }
+    }
+    /* SMALL MOBILE — max-width 480px */
+    @media (max-width: 480px) {
+      .hero h1, .hero-title { font-size: 26px !important; }
+      .mockup, .dashboard-preview, .browser-mockup { display: none; }
+    }
+</style>
 </head>
 <body>
 
@@ -500,20 +529,20 @@
   <div class="card" id="q1">
     <div class="card-title">
       <div class="card-title-num">1</div>
-      Quel type de cause représentez-vous ?
+      <span data-fr="Quel type de cause représentez-vous ?" data-en="What type of cause do you represent?">Quel type de cause représentez-vous ?</span>
     </div>
     <div class="option-grid">
-      <button class="option-btn" onclick="selectOption('cause', 'Humanitaire', this)">❤️ Humanitaire</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Environnement', this)">🌿 Environnement</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Social', this)">🤝 Social</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Santé', this)">🏥 Santé</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Éducation', this)">📚 Éducation</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Animal', this)">🐾 Animal</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Culture & Patrimoine', this)">🎭 Culture & Patrimoine</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Recherche médicale', this)">🔬 Recherche médicale</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Handicap', this)">♿ Handicap</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Personnes âgées', this)">🏡 Personnes âgées</button>
-      <button class="option-btn" onclick="selectOption('cause', 'Enfance', this)">🧒 Enfance</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Humanitaire', this)" data-fr="❤️ Humanitaire" data-en="❤️ Humanitarian">❤️ Humanitaire</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Environnement', this)" data-fr="🌿 Environnement" data-en="🌿 Environment">🌿 Environnement</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Social', this)" data-fr="🤝 Social" data-en="🤝 Social">🤝 Social</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Santé', this)" data-fr="🏥 Santé" data-en="🏥 Health">🏥 Santé</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Éducation', this)" data-fr="📚 Éducation" data-en="📚 Education">📚 Éducation</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Animal', this)" data-fr="🐾 Animal" data-en="🐾 Animal">🐾 Animal</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Culture & Patrimoine', this)" data-fr="🎭 Culture &amp; Patrimoine" data-en="🎭 Culture &amp; Heritage">🎭 Culture & Patrimoine</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Recherche médicale', this)" data-fr="🔬 Recherche médicale" data-en="🔬 Medical research">🔬 Recherche médicale</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Handicap', this)" data-fr="♿ Handicap" data-en="♿ Disability">♿ Handicap</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Personnes âgées', this)" data-fr="🏡 Personnes âgées" data-en="🏡 Elderly">🏡 Personnes âgées</button>
+      <button class="option-btn" onclick="selectOption('cause', 'Enfance', this)" data-fr="🧒 Enfance" data-en="🧒 Children">🧒 Enfance</button>
       <button class="option-btn" onclick="selectOption('cause', 'Autre', this)">✨ Autre</button>
     </div>
   </div>
@@ -522,13 +551,13 @@
   <div class="card" id="q2">
     <div class="card-title">
       <div class="card-title-num">2</div>
-      Quel est votre profil donateur cible ?
+      <span data-fr="Quel est votre profil donateur cible ?" data-en="What is your target donor profile?">Quel est votre profil donateur cible ?</span>
     </div>
     <div class="option-grid cols-2">
-      <button class="option-btn" onclick="selectOption('profile', '18-30 ans', this)">🎓 18–30 ans</button>
-      <button class="option-btn" onclick="selectOption('profile', '30-50 ans', this)">👔 30–50 ans</button>
-      <button class="option-btn" onclick="selectOption('profile', '50+ ans', this)">🏡 50+ ans</button>
-      <button class="option-btn" onclick="selectOption('profile', 'Grand donateur', this)">💎 Grand donateur</button>
+      <button class="option-btn" onclick="selectOption('profile', '18-30 ans', this)" data-fr="🎓 18–30 ans" data-en="🎓 18–30 years">🎓 18–30 ans</button>
+      <button class="option-btn" onclick="selectOption('profile', '30-50 ans', this)" data-fr="👔 30–50 ans" data-en="👔 30–50 years">👔 30–50 ans</button>
+      <button class="option-btn" onclick="selectOption('profile', '50+ ans', this)" data-fr="🏡 50+ ans" data-en="🏡 50+ years">🏡 50+ ans</button>
+      <button class="option-btn" onclick="selectOption('profile', 'Grand donateur', this)" data-fr="💎 Grand donateur" data-en="💎 Major donor">💎 Grand donateur</button>
     </div>
   </div>
 
@@ -536,7 +565,7 @@
   <div class="card" id="q3">
     <div class="card-title">
       <div class="card-title-num">3</div>
-      Quel est votre indicateur d'impact #1 ?
+      <span data-fr="Quel est votre indicateur d'impact #1 ?" data-en="What is your #1 impact indicator?">Quel est votre indicateur d'impact #1 ?</span>
     </div>
     <div class="form-group">
       <label class="form-label">Exemple : "Un repas pour €1" ou "1 arbre planté par mois"</label>
@@ -548,17 +577,17 @@
   <div class="card" id="q4">
     <div class="card-title">
       <div class="card-title-num">4</div>
-      Quel est votre canal de collecte ?
+      <span data-fr="Quel est votre canal de collecte ?" data-en="What is your fundraising channel?">Quel est votre canal de collecte ?</span>
     </div>
     <div class="option-grid">
-      <button class="option-btn" onclick="selectOption('calltype', 'F2F porte-à-porte', this)">🚪 F2F Porte-à-porte</button>
-      <button class="option-btn" onclick="selectOption('calltype', 'Télémarketing', this)">📞 Télémarketing</button>
-      <button class="option-btn" onclick="selectOption('calltype', 'Email', this)">✉️ Email</button>
+      <button class="option-btn" onclick="selectOption('calltype', 'F2F porte-à-porte', this)" data-fr="🚪 F2F Porte-à-porte" data-en="🚪 F2F Door-to-door">🚪 F2F Porte-à-porte</button>
+      <button class="option-btn" onclick="selectOption('calltype', 'Télémarketing', this)" data-fr="📞 Télémarketing" data-en="📞 Telemarketing">📞 Télémarketing</button>
+      <button class="option-btn" onclick="selectOption('calltype', 'Email', this)" data-fr="✉️ Email" data-en="✉️ Email">✉️ Email</button>
     </div>
   </div>
 
   <!-- GENERATE BTN -->
-  <button class="btn-primary" id="generate-btn" onclick="generatePitch()" disabled>
+  <button class="btn-primary" id="generate-btn" onclick="generatePitch()" disabled data-fr="⚡ Générer mon pitch personnalisé" data-en="⚡ Generate my personalised pitch">
     ⚡ Générer mon pitch personnalisé
   </button>
 
@@ -569,7 +598,7 @@
 
   <div style="text-align:center;margin-bottom:24px;">
     <div style="font-size:28px;margin-bottom:8px;">🎯</div>
-    <div style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:6px;">Votre pitch est prêt !</div>
+    <div style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:6px;" data-fr="Votre pitch est prêt !" data-en="Your pitch is ready!">Votre pitch est prêt !</div>
     <div style="font-size:14px;color:var(--gray-500);">Script personnalisé pour <span id="output-profile" style="font-weight:700;color:var(--blue);"></span> — cause <span id="output-cause" style="font-weight:700;color:var(--blue);"></span></div>
   </div>
 
@@ -577,7 +606,7 @@
   <div class="pitch-section">
     <div class="pitch-section-header">
       <span class="pitch-section-tag">Phase 1</span>
-      <span style="font-size:13px;font-weight:700;color:var(--gray-700);">ACCROCHE</span>
+      <span style="font-size:13px;font-weight:700;color:var(--gray-700);" data-fr="ACCROCHE" data-en="HOOK">ACCROCHE</span>
     </div>
     <div class="pitch-section-body">
       <p class="pitch-text" id="pitch-accroche"></p>
@@ -588,7 +617,7 @@
   <div class="pitch-section">
     <div class="pitch-section-header">
       <span class="pitch-section-tag">Phase 2</span>
-      <span style="font-size:13px;font-weight:700;color:var(--gray-700);">ARGUMENT PRINCIPAL</span>
+      <span style="font-size:13px;font-weight:700;color:var(--gray-700);" data-fr="ARGUMENT PRINCIPAL" data-en="MAIN ARGUMENT">ARGUMENT PRINCIPAL</span>
     </div>
     <div class="pitch-section-body">
       <p class="pitch-text" id="pitch-argument"></p>
@@ -599,7 +628,7 @@
   <div class="pitch-section">
     <div class="pitch-section-header">
       <span class="pitch-section-tag">Phase 3</span>
-      <span style="font-size:13px;font-weight:700;color:var(--gray-700);">GESTION DE L'OBJECTION PRINCIPALE</span>
+      <span style="font-size:13px;font-weight:700;color:var(--gray-700);" data-fr="GESTION DE L'OBJECTION PRINCIPALE" data-en="HANDLING THE MAIN OBJECTION">GESTION DE L'OBJECTION PRINCIPALE</span>
     </div>
     <div class="pitch-section-body">
       <p class="pitch-text" id="pitch-objection"></p>
@@ -610,7 +639,7 @@
   <div class="pitch-section">
     <div class="pitch-section-header">
       <span class="pitch-section-tag">Phase 4</span>
-      <span style="font-size:13px;font-weight:700;color:var(--gray-700);">CLÔTURE</span>
+      <span style="font-size:13px;font-weight:700;color:var(--gray-700);" data-fr="CLÔTURE" data-en="CLOSE">CLÔTURE</span>
     </div>
     <div class="pitch-section-body">
       <p class="pitch-text" id="pitch-cloture"></p>
@@ -629,19 +658,19 @@
     </div>
     <div class="locked-overlay">
       <div class="lock-icon">🔒</div>
-      <div class="lock-title">Débloquez le pitch complet</div>
-      <div class="lock-sub">Recevez le script 6 phases complet par email — gratuit</div>
+      <div class="lock-title" data-fr="Débloquez le pitch complet" data-en="Unlock the full pitch">Débloquez le pitch complet</div>
+      <div class="lock-sub" data-fr="Recevez le script 6 phases complet par email — gratuit" data-en="Get the full 6-phase script by email — free">Recevez le script 6 phases complet par email — gratuit</div>
       <div class="lock-features">
         <span class="lock-feature-tag">Script complet 6 phases</span>
         <span class="lock-feature-tag">5 réponses aux objections</span>
         <span class="lock-feature-tag">Variantes par profil</span>
         <span class="lock-feature-tag">Version PDF téléchargeable</span>
       </div>
-      <button class="btn-unlock" onclick="openModal()">📨 Recevoir le pitch complet par email</button>
+      <button class="btn-unlock" onclick="openModal()" data-fr="📨 Recevoir le pitch complet par email" data-en="📨 Get the full pitch by email">📨 Recevoir le pitch complet par email</button>
     </div>
   </div>
 
-  <button class="btn-primary" style="background:white;color:var(--blue);border:2px solid var(--blue);margin-top:8px;" onclick="resetForm()">
+  <button class="btn-primary" style="background:white;color:var(--blue);border:2px solid var(--blue);margin-top:8px;" onclick="resetForm()" data-fr="← Générer un nouveau pitch" data-en="← Generate a new pitch">
     ← Générer un nouveau pitch
   </button>
 
@@ -653,8 +682,8 @@
     <button class="modal-close" onclick="closeModal()">×</button>
     <div id="modal-form-wrap">
       <div class="modal-icon">📨</div>
-      <div class="modal-title">Votre pitch complet arrive</div>
-      <div class="modal-sub">Recevez le script 6 phases avec toutes les variantes et le guide des objections.</div>
+      <div class="modal-title" data-fr="Votre pitch complet arrive" data-en="Your full pitch is on its way">Votre pitch complet arrive</div>
+      <div class="modal-sub" data-fr="Recevez le script 6 phases avec toutes les variantes et le guide des objections." data-en="Get the 6-phase script with all variants and the objections guide.">Recevez le script 6 phases avec toutes les variantes et le guide des objections.</div>
       <ul class="modal-features">
         <li>Script complet — 6 phases détaillées</li>
         <li>5 réponses aux objections les plus fréquentes</li>
@@ -665,7 +694,7 @@
         <input type="text" class="modal-input" id="modal-name" placeholder="Votre prénom" style="flex:0.8;"/>
         <input type="email" class="modal-input" id="modal-email" placeholder="votre@email.fr" style="flex:1.2;"/>
       </div>
-      <button class="btn-modal-submit" onclick="submitEmail()">Recevoir mon pitch complet →</button>
+      <button class="btn-modal-submit" onclick="submitEmail()" data-fr="Recevoir mon pitch complet →" data-en="Get my full pitch →">Recevoir mon pitch complet →</button>
       <p class="modal-disclaimer">🔒 Zéro spam. Désabonnement en un clic.</p>
     </div>
     <div class="modal-success" id="modal-success">
@@ -909,14 +938,25 @@
 </script>
 <script>
   let currentLang = 'fr';
-  function toggleLang() {
-    currentLang = currentLang === 'fr' ? 'en' : 'fr';
+  function setLang(lang) {
+    currentLang = lang;
     document.querySelectorAll('[data-fr]').forEach(el => {
-      el.innerHTML = currentLang === 'fr' ? el.dataset.fr : el.dataset.en;
+      el.innerHTML = lang === 'fr' ? el.dataset.fr : (el.dataset.en || el.dataset.fr);
     });
-    const toggle = document.querySelector('.lang-toggle');
-    if (toggle) toggle.textContent = currentLang === 'fr' ? 'EN' : 'FR';
+    document.querySelectorAll('[data-placeholder-fr]').forEach(el => {
+      el.placeholder = lang === 'fr' ? el.dataset.placeholderFr : (el.dataset.placeholderEn || el.dataset.placeholderFr);
+    });
+    document.querySelectorAll('.lang-toggle').forEach(btn => {
+      btn.textContent = lang === 'fr' ? 'EN' : 'FR';
+      btn.setAttribute('aria-label', lang === 'fr' ? 'Switch to English' : 'Passer en français');
+    });
+    localStorage.setItem('lang', lang);
   }
+  function toggleLang() { setLang(currentLang === 'fr' ? 'en' : 'fr'); }
+  document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('lang');
+    if (saved && saved !== 'fr') setLang(saved);
+  });
 </script>
 </body>
 </html>
