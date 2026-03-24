@@ -1645,14 +1645,6 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
     </div>
   </section>
 
-  <!-- API KEY (discreet) -->
-  <div style="text-align:center;margin:12px 0 24px">
-    <details style="display:inline-block">
-      <summary style="font-size:11px;color:#aaa;cursor:pointer">Clé API (optionnel — améliore les pitchs avec l'IA)</summary>
-      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;width:280px;display:block;margin:8px auto 0" onchange="localStorage.setItem('anthropic_key', this.value)">
-      <div style="font-size:10px;color:#ccc;margin-top:6px">~€0.003 par pitch · Votre clé reste locale · <a href="https://console.anthropic.com" target="_blank" style="color:#a5b4fc">Obtenir une clé →</a></div>
-    </details>
-  </div>
 </main>
 
 <!-- TOAST -->
@@ -1669,10 +1661,255 @@ let state = {
   lang: 'fr'
 };
 
-// ===== PITCH DATA — 180 COMBINATIONS =====
-// Full data for: humanitaire, environnement, social, sante, education × 5 profiles × 3 channels
-// Smart fallback for remaining 7 causes
+// ===== PREMIUM PITCH ENGINE — NO API NEEDED =====
 
+const HOOKS = {
+  sceptique: [
+    "Bonsoir — je vais être direct avec vous avant même de vous parler de ma cause : vous avez des doutes sur les associations, non ?",
+    "Bonsoir. Je sais que vous avez probablement déjà fermé la porte à quelqu'un comme moi. Donnez-moi 60 secondes pour vous montrer pourquoi je mérite d'être différent.",
+    "Bonsoir. Une question avant tout : est-ce que vous avez déjà donné à une association et regretté votre décision ?",
+    "Bonsoir — je ne vais pas faire semblant que vous attendiez ma visite. Mais j'ai quelque chose de concret à vous montrer, pas juste des mots.",
+    "Bonsoir. La dernière chose que vous voulez, c'est un discours associatif. Alors je vais commencer par vos doutes, pas par mon pitch."
+  ],
+  ouvert: [
+    "Bonjour ! Vous avez l'air d'une personne qui suit l'actualité — j'ai une question qui me tient à cœur.",
+    "Bonjour ! Je ne vais pas vous faire attendre — j'ai quelque chose qui va vous toucher, je crois.",
+    "Bonjour ! Je travaille sur quelque chose d'assez extraordinaire et j'avais envie d'en parler à quelqu'un comme vous.",
+    "Bonjour ! Est-ce qu'il y a une cause dans le monde qui vous préoccupe plus que les autres en ce moment ?",
+    "Bonjour ! Vous avez une minute ? Je promets que ce que j'ai à vous dire en vaut la peine."
+  ],
+  presse: [
+    "Bonjour — 45 secondes, c'est tout ce que je vous demande. Un fait, une action.",
+    "Bonjour. Je sais que vous êtes occupé. Voilà pourquoi je vais directement au fait :",
+    "Bonjour. Un chiffre. Une question. C'est tout.",
+    "Bonjour — je fais court : un fait qui devrait vous intéresser.",
+    "Bonjour. Pas de discours. Un fait concret et votre décision."
+  ],
+  hostile: [
+    "Bonsoir. Je vois que ce n'est pas le bon moment — et franchement, je comprends.",
+    "Bonsoir. Vous n'avez pas à ouvrir la porte plus grand. Je mérite votre méfiance.",
+    "Bonsoir. Je ne vais pas faire semblant que les associations n'ont pas fait des erreurs. Certaines en ont fait.",
+    "Bonsoir. Votre réaction me dit que vous avez déjà eu une mauvaise expérience. Je voudrais comprendre.",
+    "Bonsoir. Je suis le dernier type que vous voulez voir à votre porte. Je sais. Donnez-moi quand même 30 secondes."
+  ],
+  curieux: [
+    "Bonjour ! Vous aimez comprendre comment les choses fonctionnent vraiment ?",
+    "Bonjour ! J'ai des données assez fascinantes sur cette cause — ça vous intéresse ?",
+    "Bonjour ! Est-ce que vous avez déjà réfléchi à ce que représente concrètement un don mensuel ?",
+    "Bonjour ! Une question avant de commencer : qu'est-ce qui vous ferait vraiment confiance dans une association ?",
+    "Bonjour ! Je vais vous poser une question inhabituelle : si vous pouviez voir exactement où va votre argent, est-ce que ça changerait votre rapport au don ?"
+  ]
+};
+
+const CAUSE_IMPACTS = {
+  humanitaire: [
+    "Et avec [IMPACT], un enfant mange ce soir.",
+    "[IMPACT] — pas une abstraction, un résultat documenté et certifié.",
+    "Chaque mois, [IMPACT]. C'est mesuré sur le terrain, pas dans un bureau.",
+    "[IMPACT] : c'est ce que produit votre prélèvement mensuel, tracé euro par euro.",
+    "Ce n'est pas une promesse — [IMPACT], vérifiable sur notre site aujourd'hui."
+  ],
+  environnement: [
+    "[IMPACT] — séquestré, certifié Gold Standard, et visible sur notre tableau de bord.",
+    "Avec [IMPACT], une espèce menacée a une chance de plus cette année.",
+    "[IMPACT] : c'est le calcul précis d'impact de votre don mensuel sur notre système de suivi.",
+    "Chaque mois, [IMPACT]. Pas une estimation — une mesure certifiée par des tiers indépendants.",
+    "[IMPACT] : parce que les mots ne suffisent pas, on publie les données."
+  ],
+  social: [
+    "[IMPACT] — une famille qui dormait dehors a un toit ce soir grâce à ce calcul.",
+    "Avec [IMPACT], une personne sort de la précarité alimentaire pendant un mois.",
+    "[IMPACT] : c'est ce que nos équipes terrain ont calculé pour chaque euro que nous recevons.",
+    "Chaque mois, [IMPACT]. Derrière ce chiffre, des noms, des visages, des histoires.",
+    "[IMPACT] — nous publions les données de chaque programme. Vous pouvez vérifier."
+  ],
+  sante: [
+    "[IMPACT] — un accès aux soins dans un désert médical où l'État ne va plus.",
+    "Avec [IMPACT], un patient peut être suivi pendant un mois complet.",
+    "[IMPACT] : c'est l'impact calculé de votre don sur notre protocole de soins.",
+    "Chaque mois, [IMPACT]. Des milliers de personnes qui n'auraient pas eu accès autrement.",
+    "[IMPACT] — parce que la santé ne devrait pas dépendre du code postal."
+  ],
+  education: [
+    "[IMPACT] — un enfant qui décrochait a maintenant un tuteur chaque semaine.",
+    "Avec [IMPACT], la fracture scolaire se réduit un peu.",
+    "[IMPACT] : c'est ce que nous avons calculé avec nos équipes pédagogiques.",
+    "Chaque mois, [IMPACT]. Parce que l'école publique ne peut plus tout faire seule.",
+    "[IMPACT] — mesurable, traçable, et publié dans notre rapport annuel."
+  ],
+  animal: [
+    "[IMPACT] — un animal sauvé de la souffrance ce mois.",
+    "Avec [IMPACT], une espèce a de meilleures chances de survie.",
+    "[IMPACT] : le calcul précis de ce que votre don produit dans nos refuges.",
+    "Chaque mois, [IMPACT]. Des vies qui comptent.",
+    "[IMPACT] — parce que ceux qui ne peuvent pas parler ont besoin qu'on parle pour eux."
+  ],
+  culture: [
+    "[IMPACT] — un patrimoine que vos enfants pourront encore voir.",
+    "Avec [IMPACT], une œuvre est restaurée et préservée pour les générations futures.",
+    "[IMPACT] : l'impact concret de votre soutien sur nos projets de préservation.",
+    "Chaque mois, [IMPACT]. La culture ne survit que si on choisit de la sauver.",
+    "[IMPACT] — parce que certaines choses ne peuvent pas être reproduites."
+  ],
+  recherche: [
+    "[IMPACT] — un pas de plus vers un traitement que des milliers attendent.",
+    "Avec [IMPACT], une équipe de chercheurs peut continuer ses expériences.",
+    "[IMPACT] : c'est ce que votre don finance concrètement dans nos laboratoires.",
+    "Chaque mois, [IMPACT]. La recherche ne s'arrête pas parce que les budgets publics manquent.",
+    "[IMPACT] — parce que la prochaine percée médicale a besoin de carburant."
+  ],
+  handicap: [
+    "[IMPACT] — une personne en situation de handicap gagne en autonomie ce mois.",
+    "Avec [IMPACT], une barrière d'accès tombe.",
+    "[IMPACT] : l'impact calculé de votre soutien sur notre programme d'inclusion.",
+    "Chaque mois, [IMPACT]. Parce que l'autonomie ne devrait pas dépendre des ressources.",
+    "[IMPACT] — des vies qui changent parce que quelqu'un a décidé d'agir."
+  ],
+  ages: [
+    "[IMPACT] — une personne âgée isolée n'est plus seule ce mois.",
+    "Avec [IMPACT], la solitude recule un peu.",
+    "[IMPACT] : c'est ce que votre don produit dans nos programmes de lien social.",
+    "Chaque mois, [IMPACT]. Parce que vieillir seul ne devrait pas être une fatalité.",
+    "[IMPACT] — des visites, des appels, de la présence. C'est ce que ça finance."
+  ],
+  enfance: [
+    "[IMPACT] — un enfant vulnérable est protégé ce mois.",
+    "Avec [IMPACT], une enfance abîmée a une chance de se reconstruire.",
+    "[IMPACT] : le calcul précis de votre impact sur nos programmes de protection.",
+    "Chaque mois, [IMPACT]. Parce que chaque enfant mérite une chance.",
+    "[IMPACT] — des professionnels formés, des familles accompagnées, des vies stabilisées."
+  ],
+  droits: [
+    "[IMPACT] — un droit fondamental défendu ce mois.",
+    "Avec [IMPACT], une personne persécutée est moins seule face à l'arbitraire.",
+    "[IMPACT] : l'impact concret de votre soutien sur nos actions de défense juridique.",
+    "Chaque mois, [IMPACT]. Parce que les droits ne se défendent pas sans moyens.",
+    "[IMPACT] — des avocats, des rapports, des plaidoyers. C'est ça, concrètement."
+  ]
+};
+
+const OBJECTION_RESPONSES = {
+  sceptique: [
+    "Je ne vous demande pas de me faire confiance. Je vous demande de vérifier. Voilà notre rapport certifié — page 8, chaque euro.",
+    "Bonne réaction. Les associations qui ne supportent pas cette question ont quelque chose à cacher. Voilà nos comptes en ligne.",
+    "C'est exactement ce que je dirais à votre place. Voici ce qui nous différencie : on publie ses bilans depuis 2012, certifiés par un CAC indépendant.",
+    "Vous avez raison de poser la question. La réponse honnête : 89% au terrain, 11% fonctionnement. Vérifiable en 2 minutes sur notre site.",
+    "Je vais vous montrer quelque chose. [Montre téléphone] Ce tableau de bord est mis à jour chaque semaine. C'est ça, la transparence."
+  ],
+  ouvert: [
+    "C'est une vraie question. La réponse me rend fier : on publie tout, les succès et les échecs.",
+    "Je comprends. Et c'est pour ça qu'on a construit ce tableau de bord — pour que vous puissiez vérifier vous-même.",
+    "Votre hésitation me dit que vous avez déjà été déçu. Laissez-moi vous montrer ce qui nous différencie.",
+    "C'est normal d'hésiter. Ce qui m'a convaincu moi-même, c'est leur politique de transparence totale.",
+    "Je vais vous dire quelque chose d'honnête : si vous n'êtes pas convaincu à la fin, ne donnez pas. Ce que je veux, c'est votre confiance, pas votre argent."
+  ],
+  presse: [
+    "Juste. Voici notre site — vérifiez en 2 minutes.",
+    "Compris. Une chose : 89% terrain, certifié. Voilà.",
+    "Normal. Rapport en ligne, transparent, 2 minutes à vérifier.",
+    "Je comprends. La preuve est là — section transparence sur notre site.",
+    "OK. Un seul fait à retenir : [IMPACT]. Vérifiable."
+  ],
+  hostile: [
+    "Je vous entends. Et vous avez raison d'être méfiant — certaines associations ont effectivement mal géré la confiance. Ce n'est pas le cas ici, mais je ne peux pas vous forcer à me croire.",
+    "Votre méfiance est légitime. Je ne vais pas essayer de vous convaincre en 2 minutes. Ce que je peux faire, c'est vous laisser notre documentation — vous regardez quand vous voulez.",
+    "C'est honnête de votre part. Je préfère quelqu'un qui dit ce qu'il pense à quelqu'un qui acquiesce sans conviction. Voilà ce que je vous propose : regardez ce rapport ce soir.",
+    "Je comprends. Le secteur associatif a ses scandales. Mais je ne suis pas là pour défendre le secteur — je suis là pour cette organisation spécifique. Et je peux vous montrer pourquoi elle est différente.",
+    "Vous avez raison. Et je ne vais pas vous demander de changer d'avis maintenant. Je vous laisse juste notre site. Si un jour ça vous parle, vous savez où nous trouver."
+  ],
+  curieux: [
+    "Excellente question. La réponse détaillée est dans notre rapport d'impact — je vous envoie le lien si vous voulez.",
+    "C'est exactement le genre de question qu'on aime. La réponse courte : [IMPACT]. La réponse longue est sur notre site.",
+    "Vous posez la bonne question. La réponse va vous surprendre : on publie aussi nos échecs.",
+    "Je suis content que vous demandiez ça. La plupart des gens ne veulent pas savoir. Voici les données.",
+    "C'est la meilleure question qu'on puisse poser. Et la réponse est disponible publiquement — voilà pourquoi je fais ce travail avec fierté."
+  ]
+};
+
+const CLOSINGS = {
+  portaporte: [
+    "Est-ce que [AMOUNT]€ par mois — soit [IMPACT] chaque mois — serait possible pour vous ? Et si c'est trop, [AMOUNT_LOW]€ fait déjà une vraie différence.",
+    "Je vous propose [AMOUNT]€ par mois pour commencer — vous pouvez arrêter à tout moment. Ou si vous préférez, [AMOUNT_LOW]€ pour essayer.",
+    "Une dernière question : [AMOUNT]€ par mois, ça représente [IMPACT]. C'est faisable ? Sinon, [AMOUNT_LOW]€ c'est déjà beaucoup."
+  ],
+  telephone: [
+    "Avant qu'on raccroche — [AMOUNT]€ par mois, c'est [IMPACT]. Ou [AMOUNT_LOW]€ si vous préférez commencer petit. Qu'est-ce qui vous convient ?",
+    "Je vous envoie le lien par SMS maintenant — [AMOUNT]€ par mois, résiliable à tout moment. Ou [AMOUNT_LOW]€ si vous hésitez encore.",
+    "[AMOUNT]€ par mois, et je vous envoie un email de confirmation avec tout le dossier. Ou [AMOUNT_LOW]€ pour commencer. Vous préférez lequel ?"
+  ],
+  evenement: [
+    "Est-ce que [AMOUNT]€ par mois vous parle ? C'est [IMPACT]. Ou [AMOUNT_LOW]€ si vous préférez — le formulaire prend 90 secondes.",
+    "On peut faire ça maintenant, en 2 minutes sur mon téléphone. [AMOUNT]€ ou [AMOUNT_LOW]€ — vous choisissez.",
+    "[AMOUNT]€ par mois, [IMPACT]. Ou [AMOUNT_LOW]€ si vous voulez commencer doucement. Je peux vous montrer le formulaire ?"
+  ]
+};
+
+function generateEnhancedTemplate(cause, profile, impact, amount, channel, lang) {
+  const channelKey = channel === 'portaporte' ? 'portaporte' : channel === 'telephone' ? 'telephone' : 'evenement';
+
+  // Seeded randomness: same inputs = same pitch (consistent); different cause/profile = different pick
+  const seed = (cause + profile + channel).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const pick  = (arr) => arr[seed % arr.length];
+  const pick2 = (arr) => arr[(seed + 1) % arr.length];
+
+  const hooks        = HOOKS[profile] || HOOKS.sceptique;
+  const impacts      = CAUSE_IMPACTS[cause] || CAUSE_IMPACTS.humanitaire;
+  const objResponses = OBJECTION_RESPONSES[profile] || OBJECTION_RESPONSES.sceptique;
+  const closings     = CLOSINGS[channelKey] || CLOSINGS.portaporte;
+
+  const objectionMap = {
+    sceptique: '"Comment je peux savoir que l\'argent va vraiment là où vous dites ?"',
+    ouvert:    '"Oui, c\'est bien... mais j\'ai déjà plusieurs prélèvements."',
+    presse:    '"Rappelez-moi, j\'ai vraiment pas le temps là."',
+    hostile:   '"Je ne donne plus aux associations, j\'ai été déçu trop de fois."',
+    curieux:   '"Et comment vous mesurez concrètement l\'impact de chaque euro ?"'
+  };
+
+  const amountLow = Math.max(5, amount - Math.round(amount * 0.2));
+  const impactStr  = impact || `une action concrète de ${cause}`;
+
+  const accroche = pick(hooks);
+  const argument = pick(impacts).replace(/\[IMPACT\]/g, impactStr);
+  const objection = objectionMap[profile] || objectionMap.sceptique;
+  const reponse   = pick2(objResponses).replace(/\[IMPACT\]/g, impactStr).replace(/\[cause\]/g, cause);
+  const cloture   = pick(closings)
+    .replace(/\[AMOUNT\]/g,     amount)
+    .replace(/\[AMOUNT_LOW\]/g, amountLow)
+    .replace(/\[IMPACT\]/g,     impactStr);
+
+  const scoreMap = {
+    sceptique: { empathie: 72, clarte: 85, impact: 80, closing: 68 },
+    ouvert:    { empathie: 88, clarte: 78, impact: 85, closing: 82 },
+    presse:    { empathie: 60, clarte: 95, impact: 75, closing: 78 },
+    hostile:   { empathie: 90, clarte: 70, impact: 72, closing: 55 },
+    curieux:   { empathie: 82, clarte: 88, impact: 92, closing: 75 }
+  };
+  const scores = scoreMap[profile] || scoreMap.sceptique;
+
+  const conseils = {
+    sceptique: { portaporte: "Sortez votre téléphone avec le rapport ouvert avant de sonner.", telephone: "Proposez d'envoyer le rapport par email en début d'appel.", evenement: "Laissez-le scanner le QR code lui-même — l'autonomie réduit la méfiance." },
+    ouvert:    { portaporte: "Ne tardez pas trop — l'Ouvert peut se laisser distraire.", telephone: "Demandez-lui de vous parler de ce qui le touche avant de pitcher.", evenement: "L'émotion est votre alliée — racontez une histoire courte et concrète." },
+    presse:    { portaporte: "Restez debout, ne prenez pas trop de place.", telephone: "Si ça ne répond pas au 2ème rappel, laissez un SMS factuel.", evenement: "Approchez quand il est seul, pas en groupe." },
+    hostile:   { portaporte: "Ne bloquez pas la porte — laissez-lui la possibilité de partir.", telephone: "Baissez la voix, ralentissez le débit — c'est le contraire de ce qu'il attend.", evenement: "Attendez qu'il s'approche de vous plutôt que le contraire." },
+    curieux:   { portaporte: "Préparez 3 réponses aux questions les plus précises.", telephone: "Proposez-lui un document de synthèse envoyé par email.", evenement: "Emmenez-le vers un endroit calme pour la conversation." }
+  };
+  const conseil = (conseils[profile] || conseils.sceptique)[channelKey] || "Adaptez votre énergie à celle du donateur.";
+
+  return {
+    accroche,
+    argument,
+    objectionQ: objection,
+    objectionA: reponse,
+    cloture,
+    score_empathie: scores.empathie,
+    score_clarte:   scores.clarte,
+    score_impact:   scores.impact,
+    score_closing:  scores.closing,
+    conseil
+  };
+}
+
+// ===== PITCH METADATA =====
 const CAUSES_META = {
   humanitaire: { fr: 'Humanitaire', en: 'Humanitarian', emoji: '🌍' },
   environnement: { fr: 'Environnement', en: 'Environment', emoji: '🌿' },
@@ -1702,18 +1939,8 @@ const CHANNELS_META = {
   evenement: { fr: 'Événement', en: 'Event' }
 };
 
-// Success rates by profile (based on real F2F data)
 const SUCCESS_RATES = {
   ouvert: 72, sceptique: 54, presse: 61, hostile: 38, curieux: 66
-};
-
-// Scores by combination [empathie, clarté, impact, closing]
-const SCORES = {
-  sceptique: { portaporte: [58, 82, 75, 65], telephone: [55, 85, 72, 60], evenement: [62, 80, 78, 68] },
-  ouvert:    { portaporte: [88, 75, 82, 80], telephone: [86, 78, 85, 77], evenement: [90, 72, 88, 84] },
-  presse:    { portaporte: [70, 92, 85, 72], telephone: [68, 94, 82, 70], evenement: [72, 90, 87, 75] },
-  hostile:   { portaporte: [82, 65, 60, 45], telephone: [78, 68, 58, 42], evenement: [85, 62, 62, 48] },
-  curieux:   { portaporte: [76, 70, 88, 70], telephone: [74, 72, 85, 68], evenement: [78, 68, 90, 72] }
 };
 
 // Tips by profile × channel
@@ -1721,7 +1948,7 @@ const TIPS = {
   fr: {
     sceptique: {
       portaporte: ["Sortez votre badge ou rapport annuel dès les 10 premières secondes — cela désarme la méfiance.", "Ne défendez pas l'organisation. Laissez les chiffres parler à votre place.", "Si la porte se ferme, proposez une alternative : 'Je peux vous laisser notre site et notre rapport.'"],
-      telephone: ["Annoncez votre transparence en ouverture : 'Je vous appelle de la part de [X], et je veux être direct avec vous.'", "Évitez le jargon. Soyez ultra-concret sur l'utilisation des fonds.", "Proposez un email de suivi avec preuves — beaucoup de sceptiques donneront par ce canal."],
+      telephone: ["Annoncez votre transparence en ouverture.", "Évitez le jargon. Soyez ultra-concret sur l'utilisation des fonds.", "Proposez un email de suivi avec preuves — beaucoup de sceptiques donneront par ce canal."],
       evenement: ["Ayez votre téléphone avec le rapport annuel prêt à montrer.", "Invitez-les à scanner un QR code vers votre bilan de transparence.", "Le Sceptique en événement est souvent plus ouvert — il est là de son plein gré."]
     },
     ouvert: {
@@ -1735,7 +1962,7 @@ const TIPS = {
       evenement: ["Tenez votre pitch à 45 secondes max pour ce profil.", "Ayez un formulaire numérique prêt — pas de papier à remplir.", "Proposez de les rappeler ou envoyer un lien — respectez leur temps."]
     },
     hostile: {
-      portaporte: ["Ne défendez jamais immédiatement — validez d'abord leur frustration.", "Dites : 'Vous avez raison d'être prudent. Voici ce qui nous distingue.'", "Acceptez un 'non' avec grâce — cela laisse une bonne impression et peut changer les choses."],
+      portaporte: ["Ne défendez jamais immédiatement — validez d'abord leur frustration.", "Dites : 'Vous avez raison d'être prudent. Voici ce qui nous distingue.'", "Acceptez un 'non' avec grâce — cela laisse une bonne impression."],
       telephone: ["Si il/elle devient agressif(ve), restez calme et baissez la voix.", "Utilisez la technique du miroir : répétez leurs mots pour montrer que vous écoutez.", "Un 'je vous rappelle dans 6 mois' vaut mieux qu'un conflit — plantez une graine."],
       evenement: ["Ne les approchez pas si leur langage corporel est fermé.", "Laissez-les venir à vous — en événement, l'Hostile est parfois simplement sur la défensive.", "Si le contact s'établit, soyez chaleureux et JAMAIS pressant."]
     },
@@ -1747,8 +1974,8 @@ const TIPS = {
   },
   en: {
     sceptique: {
-      portaporte: ["Pull out your badge or annual report within the first 10 seconds — it disarms suspicion.", "Don't defend the organization. Let the numbers speak for themselves.", "If the door closes, offer an alternative: 'I can leave you our website and our report.'"],
-      telephone: ["Announce your transparency upfront: 'I'm calling from [X], and I want to be straight with you.'", "Avoid jargon. Be ultra-concrete about how funds are used.", "Offer a follow-up email with proof — many skeptics will donate through this channel."],
+      portaporte: ["Pull out your badge or annual report within the first 10 seconds — it disarms suspicion.", "Don't defend the organisation. Let the numbers speak for themselves.", "If the door closes, offer an alternative: 'I can leave you our website and our report.'"],
+      telephone: ["Announce your transparency upfront.", "Avoid jargon. Be ultra-concrete about how funds are used.", "Offer a follow-up email with proof — many skeptics will donate through this channel."],
       evenement: ["Have your phone ready with the annual report to show.", "Invite them to scan a QR code to your transparency report.", "The Skeptic at an event is often more open — they're there by choice."]
     },
     ouvert: {
@@ -1762,7 +1989,7 @@ const TIPS = {
       evenement: ["Keep your pitch to 45 seconds max for this profile.", "Have a digital form ready — no paper to fill out.", "Offer to call back or send a link — respect their time."]
     },
     hostile: {
-      portaporte: ["Never defend immediately — first validate their frustration.", "Say: 'You're right to be careful. Here's what makes us different.'", "Accept a 'no' gracefully — it leaves a good impression and can change things."],
+      portaporte: ["Never defend immediately — first validate their frustration.", "Say: 'You're right to be careful. Here's what makes us different.'", "Accept a 'no' gracefully — it leaves a good impression."],
       telephone: ["If they become aggressive, stay calm and lower your voice.", "Use the mirror technique: repeat their words to show you're listening.", "A 'call me in 6 months' is better than conflict — plant a seed."],
       evenement: ["Don't approach them if their body language is closed off.", "Let them come to you — at events, The Hostile is sometimes just defensive.", "If contact is made, be warm and NEVER pushy."]
     },
@@ -1774,1094 +2001,11 @@ const TIPS = {
   }
 };
 
-// ===== PITCH CONTENT DATABASE =====
-// Template helper: replaces [impact] and [amount] tokens
-function tpl(str, impact, amount) {
-  const impactStr = impact || (state.lang === 'fr' ? '1 repas pour 1€' : '1 meal for €1');
-  const annual = amount * 12;
-  return str
-    .replace(/\[impact\]/g, impactStr)
-    .replace(/\[amount\]/g, amount)
-    .replace(/\[annual\]/g, annual);
-}
-
-const PITCHES = {
-  fr: {
-    humanitaire: {
-      sceptique: {
-        portaporte: {
-          accroche: "Bonsoir — je ne vais pas vous faire le discours habituel. En fait, ma première question c'est : est-ce que vous avez un doute sur les associations en général ? [pause 2 secondes] Parce que si oui, je veux d'abord répondre à ça avant de vous parler de la mienne.",
-          argument: "Voilà notre rapport annuel, sur mon téléphone. Page 8 : 89% des fonds vont au terrain. Page 12 : [impact] — c'est ce que votre don mensuel produit, tracé euro par euro. Vous pouvez vérifier maintenant si vous voulez.",
-          objectionQ: "« Comment je peux savoir que l'argent va vraiment là où vous dites ? »",
-          objectionA: "Je ne vous demande pas de me faire confiance — je vous demande de vérifier. Tenez, voici l'appli. [Montrez le téléphone] Nos comptes sont certifiés par un commissaire aux comptes indépendant. Et si vous tapez notre nom sur le site de Bercy, vous trouvez nos bilans depuis 2018.",
-          cloture: "Est-ce que [amount]€ par mois — soit [impact] chaque mois — serait envisageable ? Et si c'est trop, même [amount_low]€, ça change déjà quelque chose de réel."
-        },
-        telephone: {
-          accroche: "Bonjour — je vais être direct avec vous. Je vous appelle pour une cause humanitaire, et avant de vous expliquer quoi que ce soit, je voudrais savoir : est-ce que vous avez déjà eu l'impression qu'une association n'était pas transparente ? [silence] Parce que c'est justement là qu'on se différencie.",
-          argument: "Un chiffre concret : [impact]. Pas une promesse — c'est ce que chaque euro produit sur le terrain, certifié par l'IGAS et publié en open data sur notre site. Vous pouvez vérifier pendant qu'on parle si vous voulez.",
-          objectionQ: "« Comment vous avez eu mon numéro ? Vous êtes tous les mêmes ces associations. »",
-          objectionA: "Honnêtement ? Votre frustration est légitime — le secteur a ses problèmes. Ce que je peux vous dire sur nous : nos comptes sont publics, notre taux d'administratif est de 11%, et je peux vous envoyer notre certification par SMS maintenant. Pas pour vous convaincre — pour que vous puissiez vérifier vous-même.",
-          cloture: "Avant qu'on raccroche — juste un fait : [amount]€ par mois, c'est [impact] chaque mois. Si ça vous parle, je vous envoie notre dossier de transparence. Vous décidez ensuite, sans pression. Et si [amount_low]€ est plus accessible, c'est déjà quelque chose."
-        },
-        evenement: {
-          accroche: "Bonjour ! Question directe : qu'est-ce qui vous prouverait qu'une organisation humanitaire est vraiment sérieuse ? [pause — laissez répondre] Parce que c'est exactement la question qu'on me pose le plus souvent, et j'ai une réponse concrète.",
-          argument: "Voici notre QR code — ça mène directement à notre bilan certifié. [impact], c'est ce que chaque don mensuel produit, audité trimestriellement par un cabinet indépendant. Pas du marketing : des chiffres vérifiables en 30 secondes.",
-          objectionQ: "« De toute façon les ONG c'est tous des escrocs. Je lis les journaux. »",
-          objectionA: "Vous avez raison de regarder les scandales — ils existent. Et c'est pour ça qu'on publie absolument tout. Scannez ce QR code — vous avez notre bilan ligne par ligne. Si vous trouvez quelque chose qui cloche, je veux le savoir.",
-          cloture: "Si après avoir vérifié vous voulez nous rejoindre : [amount]€ par mois, c'est [impact]. Et si vous préférez commencer par [amount_low]€ pour tester — c'est tout aussi bienvenu."
-        }
-      },
-      ouvert: {
-        portaporte: {
-          accroche: "Bonsoir ! — je vais vous dire quelque chose que je ne dis pas souvent à des inconnus à leur porte. Ce que j'ai vu sur le terrain au Yémen l'an dernier m'a changé. [pause] Est-ce que vous avez quelques minutes ?",
-          argument: "Ce que vous ressentez là — cet élan — c'est exactement pourquoi j'ai choisi ce travail. [impact] : c'est ce que produit chaque mois l'engagement d'une personne comme vous. Des vies qui basculent grâce à une décision prise ce soir.",
-          objectionQ: "« Je donne déjà à la Croix-Rouge... je ne sais pas si je peux faire plus. »",
-          objectionA: "Ce que vous faites déjà est formidable — vraiment. Ce que je vous propose, c'est complémentaire, pas à la place. Et [impact] supplémentaire par mois, ça s'additionne à ce que vous faites déjà. Vous avez déjà le réflexe — il s'agit juste d'amplifier.",
-          cloture: "[amount]€ par mois, c'est [impact] chaque mois de votre côté. Est-ce que c'est envisageable ? Et si c'est un peu beaucoup, [amount_low]€ — le prix d'un café par semaine — ça change déjà quelque chose de concret."
-        },
-        telephone: {
-          accroche: "Bonjour — je vous pose une vraie question d'emblée : en ce moment, est-ce qu'il y a une image, une actualité, quelque chose dans le monde qui vous pèse ? [pause] Parce que c'est exactement là qu'on intervient.",
-          argument: "Ce qui me rend fier de ce travail, c'est qu'à la fin de cette conversation, je peux vous montrer exactement ce que fait votre argent, euro par euro. [impact] — c'est concret, c'est maintenant, c'est des gens réels.",
-          objectionQ: "« Je vais réfléchir... vous pouvez me rappeler ? »",
-          objectionA: "Bien sûr — et je ne vais pas vous harceler. Mais avant de raccrocher, juste une chose : [impact] chaque mois. Si vous donnez votre accord maintenant, on peut programmer le premier prélèvement pour dans 15 jours — vous avez le temps de vérifier entre-temps. Et vous annulez à tout moment.",
-          cloture: "[amount]€ par mois — [impact]. Si c'est trop, [amount_low]€ c'est déjà réel. Qu'est-ce qui vous convient ?"
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous passez devant notre stand — est-ce qu'il y a quelque chose ici qui vous a arrêté ? [pause] Parce que si c'est une photo ou un chiffre... c'est voulu. On veut que ça touche.",
-          argument: "[impact] — et derrière ce chiffre, il y a des histoires que j'aimerais vous raconter. Ce que vous ressentez là, c'est exactement pourquoi j'ai choisi ce travail. Les photos sur notre stand ? C'est le terrain, la semaine dernière.",
-          objectionQ: "« C'est bien mais j'ai besoin d'en parler avec mon mari / ma femme d'abord. »",
-          objectionA: "Bien sûr — c'est une décision qui se prend ensemble. Voici notre carte avec le QR code — tout est là. Et si vous voulez, je vous envoie un récap par SMS ce soir pour que vous ayez tout sous la main ce soir.",
-          cloture: "Si vous nous rejoignez — aucune pression — [amount]€ par mois c'est [impact]. Ou [amount_low]€ si vous préférez tester. La décision vous appartient."
-        }
-      },
-      presse: {
-        portaporte: {
-          accroche: "Bonsoir — 30 secondes. Un fait. Votre décision. [impact] — c'est ce que fait chaque euro qu'on collecte. C'est notre résultat terrain, certifié.",
-          argument: "[amount]€ par mois. [impact] chaque mois. [annual]€ en un an. Résiliable à tout moment, aucun engagement minimum.",
-          objectionQ: "« Je n'ai vraiment pas le temps là. »",
-          objectionA: "Je comprends — 15 secondes alors : [impact] pour [amount]€. Oui ou non ?",
-          cloture: "[amount]€ par mois — [impact]. Formulaire en 90 secondes sur mon téléphone. On le fait maintenant ? Et si [amount_low]€ c'est plus simple — pareil, ça prend 90 secondes."
-        },
-        telephone: {
-          accroche: "Bonjour — je vais être bref parce que vous avez mieux à faire. Un fait : [impact]. C'est notre résultat. Une question : ça vous parle ?",
-          argument: "[amount]€ par mois. [annual]€ sur un an. [impact] chaque mois. Résiliable quand vous voulez.",
-          objectionQ: "« Rappelez-moi demain. »",
-          objectionA: "À quelle heure exactement ? Je prends le créneau maintenant — sinon c'est perdu pour nous deux.",
-          cloture: "[amount]€ par mois — [impact]. Lien d'adhésion par SMS dans 10 secondes. Vous signez quand vous avez 2 minutes. Ou [amount_low]€ si vous préférez — même lien."
-        },
-        evenement: {
-          accroche: "Bonjour — une seconde. [impact]. Notre organisation. Ça résonne ?",
-          argument: "[amount]€ par mois égale [impact]. Formulaire numérique, 90 secondes, résiliable.",
-          objectionQ: "« J'ai pas le temps là. »",
-          objectionA: "Je vous envoie le lien sur votre téléphone — vous le faites ce soir depuis votre canapé.",
-          cloture: "Lien par SMS maintenant — vous adhérez à votre rythme. [amount]€ ou [amount_low]€ — à vous de voir."
-        }
-      },
-      hostile: {
-        portaporte: {
-          accroche: "Bonsoir — je vois que vous n'attendiez pas quelqu'un à votre porte, et je le comprends totalement. Je ne cherche pas à vous convaincre ce soir. Juste une chose à vous montrer, si vous le voulez bien.",
-          argument: "Le secteur humanitaire a eu des scandales. Vous avez raison d'être méfiant. Ce qui nous distingue, c'est que nos comptes sont publics et certifiés. [impact] — c'est vérifiable sur le site de Bercy. Je ne vous demande pas de me croire.",
-          objectionQ: "« J'ai donné une fois et j'ai jamais eu de nouvelles. Ça m'a servi de leçon. »",
-          objectionA: "[pause] C'est une déception réelle — et elle compte. Ce que je peux vous dire : on envoie un rapport d'impact chaque trimestre à nos donateurs. Pas un email générique — un document avec des résultats terrain. Si vous voulez, je vous montre un exemple sur mon téléphone.",
-          cloture: "Je ne cherche pas votre engagement ce soir. Voici notre carte. Si dans quelques semaines vous avez envie de vérifier — notre site est là. Pas de relance de notre part."
-        },
-        telephone: {
-          accroche: "Bonjour — je sais que vous n'attendiez pas cet appel. Je vais être honnête avec vous : je ne cherche pas à vous vendre quelque chose aujourd'hui. Je veux juste partager un fait.",
-          argument: "[impact] — c'est notre résultat certifié. Si ça vous parle un jour, notre site est là. Sinon — c'est correct aussi.",
-          objectionQ: "« Retirez mon numéro de votre liste. Maintenant. »",
-          objectionA: "C'est fait. [pause] Avant de raccrocher — est-ce que c'est une question de principe, ou est-ce qu'il y aurait une cause qui vous parlerait dans d'autres circonstances ?",
-          cloture: "Vous êtes retiré de notre liste comme promis. Si jamais vous changez d'avis — notre site. Bonne journée à vous."
-        },
-        evenement: {
-          accroche: "Bonjour — pas de discours. Je suis là si vous avez une question.",
-          argument: "Ce qu'on fait en un chiffre : [impact]. C'est affiché sur notre panneau si vous voulez lire.",
-          objectionQ: "« Ces stands m'énervent. Vous bloquez le passage. »",
-          objectionA: "[calme] Vous avez raison — je recule. [pause] Si jamais la curiosité revient, je suis là sans vous accrocher.",
-          cloture: "Bonne journée. Notre carte est sur la table si vous repassez."
-        }
-      },
-      curieux: {
-        portaporte: {
-          accroche: "Bonsoir ! Je représente une organisation humanitaire — et j'ai l'impression que vous êtes quelqu'un qui aime comprendre comment les choses fonctionnent vraiment. [pause] Je me trompe ?",
-          argument: "[impact] — et voici comment on arrive à ce chiffre : sélection des projets par un comité indépendant, audit terrain trimestriel, publication des résultats en open data. Je peux vous expliquer chaque étape si vous voulez. Ce n'est pas une estimation — c'est une moyenne calculée sur 4 ans de terrain.",
-          objectionQ: "« Mais comment vous choisissez concrètement où l'argent va ? Qui décide ? »",
-          objectionA: "Bonne question — la réponse va vous surprendre. On ne décide pas seuls : on a un comité de sélection avec des experts indépendants — des médecins, des économistes du développement — qui évaluent les projets selon des critères publics. Et [impact] est le résultat de cette rigueur.",
-          cloture: "[amount]€ par mois, c'est [impact] chaque mois. Plus notre newsletter terrain — vous voyez les résultats concrets de votre don chaque trimestre. Ça vous correspond ? Et si [amount_low]€ c'est plus adapté — même newsletter, même impact."
-        },
-        telephone: {
-          accroche: "Bonjour — je vous pose une question ouverte d'emblée : est-ce qu'il y a des aspects du fonctionnement des ONG qui vous ont toujours intrigué, ou peut-être irrité ? [silence]",
-          argument: "Voilà ce que j'aime expliquer : [impact] — et le chemin pour y arriver. Sélection des partenaires terrain, logistique, mesure de l'impact. Je peux vous détailler la chaîne complète — ou vous envoyer notre rapport d'impact par email si vous préférez.",
-          objectionQ: "« Combien vous prenez en frais de fonctionnement exactement ? »",
-          objectionA: "11% — dont cette équipe de collecte. 89% vont au terrain. C'est dans notre rapport public, page 14 — je vous l'envoie par email dans 30 secondes si vous voulez.",
-          cloture: "[amount]€ par mois — [impact] et accès à notre rapport d'impact trimestriel. Vous posez les questions — on répond. C'est ça notre engagement. Ou [amount_low]€ si vous voulez commencer prudemment."
-        },
-        evenement: {
-          accroche: "Bonjour ! Je vois que vous lisez nos panneaux avec attention — vous avez des questions ? Je suis là pour y répondre vraiment, pas juste vous donner un flyer.",
-          argument: "Ce qui m'intéresse, c'est de vous expliquer ce qui se passe derrière les chiffres. Par exemple : [impact] — voici comment on arrive à ce résultat, étape par étape. [sortez votre téléphone avec le rapport]",
-          objectionQ: "« C'est quoi exactement la différence entre vous et MSF, ou le CICR ? »",
-          objectionA: "Bonne question — et la réponse est vraiment différente selon les organisations. Nous, on est spécialisés sur [domaine spécifique]. MSF c'est l'urgence médicale. Le CICR c'est le droit humanitaire. On ne se marche pas dessus — on est complémentaires. Et [impact], c'est notre spécificité.",
-          cloture: "[amount]€ par mois, c'est [impact] et accès à nos données terrain. Pour quelqu'un qui veut vraiment comprendre son impact — c'est fait pour vous. Ou [amount_low]€ pour commencer."
-        }
-      }
-    },
-
-    environnement: {
-      sceptique: {
-        portaporte: {
-          accroche: "Bonsoir — je travaille pour une organisation de protection de l'environnement. Avant de vous parler de ce qu'on fait, une question directe : est-ce que le 'greenwashing' vous a déjà agacé ? [pause] Parce que c'est exactement pour ça qu'on a conçu notre modèle.",
-          argument: "Des chiffres précis : on a planté 2,3 millions d'arbres endémiques depuis 2019 — coordonnées GPS vérifiables en ligne. Chaque arbre séquestre en moyenne 22 kg de CO₂ par an. [impact] — pas du marketing, de la reforestation certifiée par le Gold Standard.",
-          objectionQ: "« Ces organisations 'vertes', c'est souvent de la communication. Les arbres meurent dans les deux ans. »",
-          objectionA: "Vous avez mis le doigt sur le vrai problème du secteur. Notre taux de survie à 3 ans est de 84% — parce qu'on plante exclusivement des espèces endémiques avec des communautés locales qui ont un intérêt à les protéger. Voici les données GPS sur mon téléphone.",
-          cloture: "[amount]€ par mois, c'est [impact] — des arbres vivants, vérifiables, coordonnées GPS incluses. Vous pouvez les voir sur notre carte interactive. Ou [amount_low]€ si vous voulez commencer par là."
-        },
-        telephone: {
-          accroche: "Bonjour — organisation de protection des forêts. Je vais être direct : je sais que beaucoup d'organisations 'vertes' surestiment leur impact. Voici pourquoi nos chiffres sont différents.",
-          argument: "[impact] — avec certification Gold Standard internationale et tracking GPS de chaque plantation. Nos données sont en open source sur notre site. Tapez notre nom + 'impact report' sur Google — vous trouvez tout.",
-          objectionQ: "« Comment vous prouvez que les arbres restent plantés et ne sont pas revendus ? »",
-          objectionA: "Suivi satellite tous les 6 mois, partenariat avec des ONG locales dont la réputation locale dépend des résultats, et audit indépendant annuel. Nos certificats Gold Standard incluent des clauses de permanence. Je vous envoie le document ?",
-          cloture: "[amount]€ par mois = [impact] certifié. Je vous envoie le rapport de vérification par email. Vous décidez avec toutes les preuves. Et [amount_low]€, c'est pareil — même certification."
-        },
-        evenement: {
-          accroche: "Bonjour ! Question directe : vous croyez aux actions concrètes pour le climat, ou vous pensez qu'on est trop en retard pour que ça change quoi que ce soit ? [pause — laissez répondre vraiment]",
-          argument: "[impact] — avec photos géolocalisées et suivi satellite. Ce n'est pas symbolique : c'est 847 hectares de forêts restaurées depuis 2019, en Amazonie brésilienne et au Bassin du Congo. Scannez ce QR code — vous voyez nos plantations en temps réel.",
-          objectionQ: "« Ces associations écolos, c'est des business qui vivent du sentiment de culpabilité. »",
-          objectionA: "Je comprends le cynisme — et certains le méritent. Voici notre bilan financier — 91% au terrain, 9% frais de structure. Et scannez ce QR code : vous voyez les coordonnées GPS de chaque arbre planté. C'est notre réponse.",
-          cloture: "[amount]€ par mois, c'est [impact]. Vous recevez les photos et coordonnées GPS de votre impact. Concret et vérifiable. Ou [amount_low]€ — même transparence."
-        }
-      },
-      ouvert: {
-        portaporte: {
-          accroche: "Bonsoir ! — est-ce que le changement climatique est quelque chose qui vous préoccupe au quotidien ? [pause] Parce que si oui, ce que je fais peut vous intéresser — et je ne parle pas d'acheter des offsets carbone depuis un bureau.",
-          argument: "Ce qui me donne de l'espoir chaque jour : [impact]. On travaille avec des espèces comme le Cèdre de l'Atlas et l'Araucaria — des arbres qui vivent 200 ans et qui ancrent des écosystèmes entiers. Chaque mois, des forêts se reconstituent grâce à des gens comme vous.",
-          objectionQ: "« Je fais déjà attention à mon empreinte carbone — je mange moins de viande, je prends le vélo... »",
-          objectionA: "C'est formidable — et ça compte vraiment. Ce que vous faites à titre personnel, c'est irremplaçable. Un don mensuel, c'est l'amplifier à l'échelle collective — [impact] de forêt en plus chaque mois, là où l'érosion est la plus forte.",
-          cloture: "[amount]€ par mois — [impact]. L'équivalent d'un déjeuner par mois pour restaurer des écosystèmes qui existeront dans 200 ans. C'est envisageable ? Ou [amount_low]€ si vous préférez."
-        },
-        telephone: {
-          accroche: "Bonjour ! Une question directe : est-ce qu'il y a un aspect du changement climatique qui vous touche particulièrement — la biodiversité, les océans, les forêts ? [pause]",
-          argument: "Voilà ce que permet votre don : [impact]. Et ce qui m'émeut, c'est qu'on plante des espèces qui n'existeraient plus dans 50 ans si on ne fait rien — comme le Cèdre de l'Atlas au Maroc, qui disparaît à 60% depuis 1980.",
-          objectionQ: "« Je soutiens déjà Greenpeace et le WWF. »",
-          objectionA: "Parfait — et c'est complémentaire. Greenpeace fait du plaidoyer, WWF de la protection des espèces. Nous, on fait de la reforestation terrain, espèces endémiques, avec les communautés locales. [impact] — un métier différent pour une chaîne complète.",
-          cloture: "[amount]€ par mois — [impact]. Vous recevrez notre rapport mensuel avec les photos du terrain. Si [amount_low]€ c'est plus adapté — même impact, même transparence."
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous vous intéressez à l'environnement — est-ce qu'une forêt en particulier vous tient à cœur ? [pause] Parce qu'on travaille sur plusieurs biomes, et j'aimerais vous montrer celui qui vous parle.",
-          argument: "Notre résultat concret : [impact]. On est sur une carte interactive en temps réel sur notre stand — venez voir les plantations de la semaine dernière au Brésil.",
-          objectionQ: "« C'est bien, mais est-ce que ça suffit vraiment face à l'ampleur de la déforestation ? »",
-          objectionA: "Non — seul, non. Ensemble, oui. Nos 18 000 donateurs ont planté l'équivalent de 1 200 terrains de foot de forêt cette année. Et [impact] s'ajoute à ça chaque mois. C'est pas rien.",
-          cloture: "[amount]€ par mois — [impact] et vos photos GPS chaque trimestre. Rejoignez les 18 000 ? Ou commencez par [amount_low]€."
-        }
-      },
-      presse: {
-        portaporte: {
-          accroche: "Bonsoir — 30 secondes. Reforestation. [impact]. Vérifiable GPS. [amount]€ par mois.",
-          argument: "[amount]€ = [impact] certifié Gold Standard = [annual]€ d'impact annuel. Résiliable quand vous voulez.",
-          objectionQ: "« Pas le temps. »",
-          objectionA: "[impact] pour [amount]€. Formulaire en 90 secondes. Maintenant ou demain — à vous.",
-          cloture: "Je vous envoie le lien par SMS. Vous signez depuis votre canapé ce soir. [amount]€ ou [amount_low]€ — à vous."
-        },
-        telephone: {
-          accroche: "Bonjour — bref. Reforestation. Un chiffre : [impact]. [amount]€ par mois. Ça parle ?",
-          argument: "[impact]. Gold Standard. [annual]€ par an. Résiliable.",
-          objectionQ: "« Rappelez. »",
-          objectionA: "À quelle heure demain exactement ? Je note.",
-          cloture: "Lien par SMS — vous signez quand vous avez 2 minutes. [amount]€ ou [amount_low]€."
-        },
-        evenement: {
-          accroche: "Bonjour — [impact]. Reforestation. Ça résonne ?",
-          argument: "[amount]€ par mois. [impact]. GPS certifié. Formulaire numérique.",
-          objectionQ: "« Pas le temps. »",
-          objectionA: "QR code — vous le faites chez vous ce soir.",
-          cloture: "QR code là. [amount]€ ou [amount_low]€ — à votre rythme."
-        }
-      },
-      hostile: {
-        portaporte: {
-          accroche: "Bonsoir — je ne vais pas vous retenir. Je fais de la reforestation terrain. Si ça vous intéresse un jour, voilà notre carte.",
-          argument: "[impact] — des arbres endémiques, coordonnées GPS vérifiables. C'est sur notre site.",
-          objectionQ: "« De toute façon on va droit dans le mur. Rien ne sert à rien. »",
-          objectionA: "[pause] Je comprends ce sentiment. Il m'arrive d'y penser aussi. Ce qui me fait tenir, c'est [impact] — des arbres vivants, maintenant. Petit à petit.",
-          cloture: "Notre carte si ça vous revient. Bonne soirée."
-        },
-        telephone: {
-          accroche: "Bonjour — je sais que cet appel n'était pas attendu. Je vais être bref et honnête.",
-          argument: "[impact] — reforestation terrain, certifiée. Je ne cherche pas à vous culpabiliser.",
-          objectionQ: "« Le changement climatique c'est trop grand. Un don ne changera rien. »",
-          objectionA: "Je ne vais pas vous contredire — l'ampleur est réelle. Mais [impact] c'est un arbre vivant, maintenant. Et 18 000 dons comme ça, ça fait une forêt.",
-          cloture: "Je ne rappelle pas. Notre site si jamais. Bonne journée."
-        },
-        evenement: {
-          accroche: "Bonjour — pas de pression. Je suis là si vous avez une question sur la reforestation.",
-          argument: "[impact]. C'est sur notre panneau.",
-          objectionQ: "« Ces stands m'énervent. »",
-          objectionA: "[calme] Je comprends. Je reste dans mon espace.",
-          cloture: "Bonne journée."
-        }
-      },
-      curieux: {
-        portaporte: {
-          accroche: "Bonsoir ! Organisation de reforestation — j'imagine que vous avez des questions sur les méthodes et l'impact carbone réel. [pause] Parce que c'est là où la plupart des organisations restent vagues.",
-          argument: "[impact] — calculé avec la méthode GIEC pour la séquestration carbone, avec audit indépendant annuel. On plante exclusivement des espèces endémiques sélectionnées par des botanistes locaux — pas de monoculture. [sortez votre téléphone avec la carte GPS]",
-          objectionQ: "« Vous plantez quelles espèces exactement ? Et comment vous gérez la survie à long terme ? »",
-          objectionA: "Bonne question — c'est la clé. On travaille avec des botanistes de l'université locale pour sélectionner les espèces les plus adaptées à chaque microbiome. En Amazonie : Cèdre brésilien, Ingá, Jatobá. Au Sahel : Acacia sénégal, Baobab, Parkia. Taux de survie à 3 ans : 84%. C'est notre garantie.",
-          cloture: "[amount]€ par mois, c'est [impact] et notre newsletter botanique mensuelle — espèces plantées, données de survie, photos terrain. Pour quelqu'un qui veut vraiment comprendre. Ou [amount_low]€ — même accès."
-        },
-        telephone: {
-          accroche: "Bonjour ! Reforestation — et j'ai l'impression que vous aimez les détails techniques. Question : est-ce que vous connaissez la différence entre séquestration carbone et compensation carbone ?",
-          argument: "[impact] — séquestration directe, pas de compensation. Méthode GIEC, certification Gold Standard, données en open source. Je peux vous envoyer notre étude d'impact si vous voulez.",
-          objectionQ: "« Quelle est votre méthode pour calculer l'impact carbone ? »",
-          objectionA: "On utilise la méthodologie VM0007 du Verified Carbon Standard — la référence internationale. Chaque arbre a une estimation de séquestration calculée selon son espèce, son âge, son biome. [impact] = moyenne sur notre portfolio de 2,3 millions d'arbres. Je vous envoie l'étude ?",
-          cloture: "[amount]€ par mois — [impact] et accès à notre base de données scientifique. Pour quelqu'un qui veut des vrais chiffres. Ou [amount_low]€ — même accès aux données."
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous lisez nos données avec attention — vous avez des questions techniques sur notre méthode de reforestation ?",
-          argument: "[impact] — méthode GIEC, Gold Standard, espèces endémiques. Voici notre guide des espèces par biome sur mon téléphone.",
-          objectionQ: "« Vous plantez des espèces adaptées aux changements climatiques projetés ou aux conditions actuelles ? »",
-          objectionA: "Excellente question — c'est justement ce qui distingue notre approche. On utilise les modèles climatiques CMIP6 pour choisir des espèces qui survivront aux conditions de 2050-2080, pas juste d'aujourd'hui. C'est notre collaboration avec le CIRAD.",
-          cloture: "[amount]€ par mois, c'est [impact] et notre publication scientifique trimestrielle. Pour quelqu'un qui veut des preuves, pas des promesses. Ou [amount_low]€ — même rigueur."
-        }
-      }
-    },
-
-    social: {
-      sceptique: {
-        portaporte: {
-          accroche: "Bonsoir — je travaille sur la lutte contre la pauvreté urbaine en France. Une question directe : est-ce que vous pensez que l'aide sociale en France fonctionne vraiment ? [pause] Parce que je pense que vous avez des bonnes raisons d'en douter.",
-          argument: "Voilà notre différence : on ne distribue pas — on accompagne. 18 mois de suivi individualisé : logement, emploi, santé, lien social. [impact] — taux d'autonomie durable à 3 ans publié par l'INSEE. Pas une promesse : 78% de nos bénéficiaires sont sortis de la précarité après notre programme.",
-          objectionQ: "« Ça ne change rien dans le fond — la pauvreté existe depuis toujours. »",
-          objectionA: "Je comprends le scepticisme — et l'assistanat ne fonctionne pas. C'est exactement pour ça qu'on fait différemment : accompagnement sur 18 mois, objectifs individuels, suivi de sortie. [impact] — c'est notre résultat réel, pas notre promesse.",
-          cloture: "[amount]€ par mois, c'est [impact] — un investissement dans l'autonomie, pas la charité. Vérifiable sur notre rapport annuel. Ou [amount_low]€ — même modèle, même rigueur."
-        },
-        telephone: {
-          accroche: "Bonjour — organisation de lutte contre l'exclusion sociale. Je vais anticiper votre scepticisme : l'aide sociale en France, ça peut paraître un puits sans fond. Voici pourquoi notre modèle est différent.",
-          argument: "[impact] — accompagnement personnalisé 18 mois, taux d'autonomie durable 78%, publié dans notre rapport certifié. Pas du saupoudrage : de la construction.",
-          objectionQ: "« Ces associations sociales font du saupoudrage avec l'argent des donateurs. »",
-          objectionA: "C'est une critique juste pour beaucoup. Notre réponse : suivi individuel sur 18 mois minimum, objectifs contractualisés avec chaque bénéficiaire, publication des résultats à 3 ans. [impact] — c'est structurel, pas ponctuel.",
-          cloture: "[amount]€ par mois = [impact]. Je vous envoie notre rapport par email — vous jugez vous-même. Et si [amount_low]€ c'est plus adapté — même engagement."
-        },
-        evenement: {
-          accroche: "Bonjour ! Question provocatrice : est-ce que vous pensez que l'aide aux personnes en précarité peut vraiment changer leur trajectoire ? [pause — laissez répondre]",
-          argument: "[impact] — taux d'autonomie durable 78%, suivi sur 3 ans. En France, 9 millions de personnes sous le seuil de pauvreté. Notre programme touche [nombre] familles par an dans [villes].",
-          objectionQ: "« Je préfère donner directement aux gens que je vois dans la rue — au moins je sais où ça va. »",
-          objectionA: "Ce réflexe est humain et beau. Le don direct aide dans l'instant. Notre programme aide à sortir de la spirale — 18 mois d'accompagnement structuré. Les deux sont nécessaires et complémentaires.",
-          cloture: "[amount]€ par mois — [impact]. Rapport annuel certifié. Ou [amount_low]€ pour commencer."
-        }
-      },
-      ouvert: {
-        portaporte: {
-          accroche: "Bonsoir ! Je travaille sur la lutte contre la pauvreté infantile en France — est-ce que c'est un sujet qui vous touche ? [pause] Parce que 3 millions d'enfants vivent sous le seuil de pauvreté en France aujourd'hui.",
-          argument: "Ce qui me touche dans ce travail : [impact]. Ce n'est pas de l'assistanat — c'est de la dignité retrouvée. Des familles qui sortent de la spirale de l'exclusion grâce à un accompagnement qui leur ressemble.",
-          objectionQ: "« C'est difficile de ne pas se sentir submergé par l'ampleur du problème. »",
-          objectionA: "Je le ressens aussi. Ce qui m'aide, c'est de me concentrer sur [impact] — pas sur l'ampleur du problème, mais sur ce qu'on peut faire concrètement maintenant. Chaque mois, des familles s'en sortent.",
-          cloture: "[amount]€ par mois, c'est [impact]. La différence entre la survie et la dignité. C'est quelque chose qui vous touche ? Et si [amount_low]€ c'est plus adapté — pareil."
-        },
-        telephone: {
-          accroche: "Bonjour ! Je vous appelle pour une cause qui me touche profondément — la pauvreté infantile en France. 3 millions d'enfants concernés. Est-ce que c'est quelque chose qui vous préoccupe ?",
-          argument: "Voilà ce que ça change concrètement : [impact]. Pas de la théorie — des vies qui se reconstruisent, des enfants qui mangent à leur faim et vont à l'école dans de bonnes conditions.",
-          objectionQ: "« Je soutiens déjà une association locale pour les sans-abri. »",
-          objectionA: "C'est formidable — et c'est essentiel. Ce qu'on fait est complémentaire : on s'occupe des familles avec enfants avant que la rue devienne une option. [impact] — en amont.",
-          cloture: "[amount]€ par mois — [impact]. Vous recevez les témoignages des familles que vous aidez. C'est humain et réel. Ou [amount_low]€ — même engagement."
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous savez qu'en France, un enfant sur cinq vit dans une famille qui ne peut pas chauffer correctement son appartement l'hiver ? [pause] C'est ce qu'on combat.",
-          argument: "[impact] — des familles accompagnées sur 18 mois, des enfants qui restent à l'école. Les photos sur notre stand ? Ce sont des familles réelles, avec leur accord.",
-          objectionQ: "« C'est bien, mais j'ai l'impression qu'il y a tellement de besoins... »",
-          objectionA: "Il y en a. Et c'est pour ça que chaque engagement compte. Imaginez 2 000 personnes qui disent la même chose que vous ce soir — ensemble, c'est [impact] × 2 000 chaque mois.",
-          cloture: "[amount]€ par mois — [impact]. Rejoignez les 2 000 ? Ou commencez par [amount_low]€."
-        }
-      },
-      presse: {
-        portaporte: {
-          accroche: "Bonsoir — 30 secondes. Lutte contre la pauvreté infantile en France. [impact]. [amount]€ par mois.",
-          argument: "[amount]€ = [impact]. [annual]€ par an. Impact mesurable.",
-          objectionQ: "« Pas le temps. »",
-          objectionA: "[impact]. 90 secondes. Maintenant ?",
-          cloture: "Formulaire numérique — on le fait ? [amount]€ ou [amount_low]€."
-        },
-        telephone: {
-          accroche: "Bonjour — bref. Pauvreté infantile France. [impact]. [amount]€ par mois. Ça vous parle ?",
-          argument: "[impact]. Résiliable. Sans condition.",
-          objectionQ: "« Plus tard. »",
-          objectionA: "Quand exactement ? Je prends le créneau.",
-          cloture: "Lien SMS — vous signez quand vous avez 2 minutes."
-        },
-        evenement: {
-          accroche: "Bonjour — [impact]. Pauvreté infantile en France. Ça résonne ?",
-          argument: "[amount]€ par mois. [impact]. Formulaire numérique.",
-          objectionQ: "« Pas le temps. »",
-          objectionA: "QR code — à votre rythme.",
-          cloture: "Voilà notre QR code. [amount]€ ou [amount_low]€."
-        }
-      },
-      hostile: {
-        portaporte: {
-          accroche: "Bonsoir — je ne vais pas vous déranger longtemps. Lutte contre la pauvreté en France — si jamais ça vous intéresse un jour, voilà notre carte.",
-          argument: "[impact] — accompagnement 18 mois, 78% d'autonomie durable. Sur notre site.",
-          objectionQ: "« Ces associations profitent de la misère des gens pour se faire de l'argent. »",
-          objectionA: "[pause] Cette colère est légitime — des scandales ont existé. Notre bilan est public : 88% des fonds vont au terrain. Sur notre site, tout est détaillé.",
-          cloture: "Notre carte. Bonne soirée."
-        },
-        telephone: {
-          accroche: "Bonjour — organisation sociale en France. Je serai bref et honnête. Je ne cherche pas à vous convaincre aujourd'hui.",
-          argument: "[impact] — accompagnement personnalisé, résultats publiés. C'est tout.",
-          objectionQ: "« J'en ai assez de ces appels. »",
-          objectionA: "Je vous retire immédiatement. [pause] Juste — [impact]. C'est notre réalité quotidienne.",
-          cloture: "Retiré comme promis. Bonne journée."
-        },
-        evenement: {
-          accroche: "Bonjour — pas de pression du tout.",
-          argument: "[impact]. Pauvreté infantile en France. C'est sur notre panneau.",
-          objectionQ: "« Ces stands m'agacent. »",
-          objectionA: "Je comprends totalement. Je ne vous retiens pas.",
-          cloture: "Bonne journée !"
-        }
-      },
-      curieux: {
-        portaporte: {
-          accroche: "Bonsoir ! Organisation de lutte contre la pauvreté en France — j'imagine que vous avez des questions sur comment on mesure vraiment l'impact social à long terme. C'est là où la plupart des associations restent floues.",
-          argument: "[impact] — mesuré avec les indicateurs OCDE de bien-être multidimensionnel : revenus, logement, santé, lien social, emploi. Suivi longitudinal sur 3 ans. Publication annuelle avec méthodologie complète.",
-          objectionQ: "« Comment vous définissez 'sortir de la pauvreté' exactement ? C'est subjectif. »",
-          objectionA: "Question précise — voici notre réponse précise : on utilise le seuil de pauvreté relative INSEE (60% du revenu médian) PLUS des indicateurs de bien-être subjectif PLUS l'accès aux droits fondamentaux. [impact] intègre ces trois dimensions. Notre méthodologie est publiée et co-validée avec Sciences Po.",
-          cloture: "[amount]€ par mois — [impact] et notre rapport d'impact avec méthodologie complète. Pour quelqu'un qui veut comprendre en profondeur avant d'agir. Ou [amount_low]€ — même accès."
-        },
-        telephone: {
-          accroche: "Bonjour ! Organisation sociale — j'ai l'impression que vous êtes quelqu'un qui veut comprendre les mécanismes avant de s'engager. C'est exactement l'approche qu'on préfère.",
-          argument: "[impact] — et voici pourquoi ce chiffre tient : méthodologie OCDE, co-validation Sciences Po, audit externe annuel. Je peux vous envoyer notre étude d'impact complète.",
-          objectionQ: "« Votre approche c'est redistribution ou autonomisation ? »",
-          objectionA: "Autonomisation — sans hésitation. On ne donne pas de l'argent : on accompagne sur 18 mois avec un plan individualisé. Logement, emploi, santé, lien social. [impact] = résultat de cet accompagnement global. L'argent est un outil, pas une fin.",
-          cloture: "[amount]€ par mois — [impact] et accès à notre étude d'impact complète. Vous comprenez chaque étape. Ou [amount_low]€ — même transparence."
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous regardez nos données avec intérêt — des questions sur notre méthode d'impact social ?",
-          argument: "[impact] — indicateurs multidimensionnels OCDE, co-validé Sciences Po, audit indépendant.",
-          objectionQ: "« Quelles sont vos sources de financement ? Êtes-vous vraiment indépendants de l'État ? »",
-          objectionA: "75% dons privés individuels, 20% fondations privées, 5% subventions locales — aucune subvention d'État central. Notre indépendance est un principe fondateur. [impact] n'est pas biaisé par des agendas politiques.",
-          cloture: "[amount]€ par mois — [impact] avec toutes les sources de financement détaillées dans notre rapport annuel. Ou [amount_low]€."
-        }
-      }
-    },
-
-    sante: {
-      sceptique: {
-        portaporte: {
-          accroche: "Bonsoir — je travaille pour une organisation de santé. Avant tout : est-ce que vous avez déjà eu l'impression qu'une organisation médicale internationale ne faisait pas ce qu'elle promettait ? [pause] Parce que je veux répondre à ça avant de vous parler de la nôtre.",
-          argument: "Voilà notre chaîne de traçabilité : du don à la dispensation, chaque médicament est tracé. [impact] — certifié par l'OMS, audit logistique trimestriel. Nos comptes médicaux sont publiés sur notre site avec les noms des hôpitaux partenaires.",
-          objectionQ: "« Comment je sais que les médicaments arrivent vraiment aux patients et ne sont pas revendus ? »",
-          objectionA: "Traçabilité RFID sur chaque lot, partenariat avec des hôpitaux OMS agréés, et rapport de dispensation signé par le médecin référent. Je peux vous montrer notre tableau de bord logistique sur mon téléphone.",
-          cloture: "[amount]€ par mois, c'est [impact] — une santé mesurable, une vie traçable. Ou [amount_low]€ — même traçabilité."
-        },
-        telephone: {
-          accroche: "Bonjour — organisation de santé internationale. Je vais être direct : je sais que l'aide médicale peut paraître opaque. Voici ce qui nous différencie.",
-          argument: "[impact] — certifié OMS, traçabilité complète du don au patient. 89 centimes sur chaque euro arrivent à destination. Vérifiable sur notre site.",
-          objectionQ: "« Ces organisations de santé, c'est souvent inefficace et bureaucratique. »",
-          objectionA: "C'est une critique juste pour certains modèles. Nous on travaille exclusivement avec des structures locales existantes — on renforce ce qui existe, on ne crée pas de nouvelle bureaucratie. [impact] résulte de cette approche.",
-          cloture: "[amount]€ par mois = [impact]. Je vous envoie notre certification OMS par email ? Et si [amount_low]€ c'est plus adapté — même certification."
-        },
-        evenement: {
-          accroche: "Bonjour ! — organisation de santé. Question directe : est-ce que vous connaissez la notion de 'désert médical' en France ? [pause] Parce qu'on travaille sur la même réalité, mais à l'échelle internationale.",
-          argument: "[impact] — certifié OMS. On travaille dans des zones où le ratio médecin/habitant est de 1 pour 50 000 — l'équivalent d'une seule salle d'attente pour tout un département.",
-          objectionQ: "« Ces stands de collecte, c'est surtout pour financer les salaires des collecteurs. »",
-          objectionA: "Voici notre bilan : 89% au terrain, 11% frais de structure dont cette collecte. Et [impact] prouve que ça marche. Scannez ce QR code pour voir notre rapport complet.",
-          cloture: "[amount]€ par mois — [impact]. Vérifiable en ligne. Ou [amount_low]€ — même rigueur."
-        }
-      },
-      ouvert: {
-        portaporte: {
-          accroche: "Bonsoir ! Je travaille pour une organisation de santé internationale. Est-ce que vous avez déjà pensé à ce que ça veut dire de ne pas avoir accès à un médecin ? Pas au bout d'une heure — jamais. [pause]",
-          argument: "Ce qui me fait lever le matin : [impact]. Des femmes qui accouchent en sécurité dans des zones où 40% des naissances se passaient sans aucune assistance médicale. Des enfants qui survivent à des maladies entièrement évitables.",
-          objectionQ: "« Je cotise déjà à la Sécu — est-ce que c'est pas déjà assez ? »",
-          objectionA: "Votre cotisation, c'est votre filet de sécurité — et c'est essentiel. Ce qu'on finance, c'est l'accès aux soins pour ceux qui n'ont aucun filet. [impact] là où il n'y a littéralement rien d'autre.",
-          cloture: "[amount]€ par mois — [impact]. L'équivalent d'une consultation chez vous offre bien plus ailleurs. Ou [amount_low]€ — même impact."
-        },
-        telephone: {
-          accroche: "Bonjour ! Une question avant tout : est-ce que la santé internationale est quelque chose qui vous touche — les maladies évitables, la mortalité maternelle ? [pause]",
-          argument: "[impact] — et derrière ce chiffre, il y a des histoires réelles. Des enfants qui survivent au paludisme avec 5€ de médicaments. Des mères qui accouchent en sécurité pour la première fois dans leur village.",
-          objectionQ: "« C'est bien mais il y a tellement de besoins en France aussi... »",
-          objectionA: "C'est vrai — et les deux sont vrais en même temps. [impact] là-bas pour [amount]€ par mois, ça ne retire rien à ce qu'on fait en France. Et là-bas, l'impact par euro est souvent dix fois plus élevé.",
-          cloture: "[amount]€ par mois — [impact]. Des vies sauvées. Vous pouvez arrêter quand vous voulez. Ou [amount_low]€."
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous savez combien coûte un traitement complet contre le paludisme dans les zones où on travaille ? 6 euros. [pause] 6 euros pour sauver une vie d'enfant.",
-          argument: "[impact] — et c'est ce que chaque don mensuel produit. Les photos sur notre stand ? Ce sont des patients de nos partenaires hospitaliers cette année.",
-          objectionQ: "« C'est touchant. Je dois en parler avec ma femme d'abord. »",
-          objectionA: "Bien sûr — c'est une décision qui se prend ensemble. Voici notre carte et QR code. Et si vous voulez, un SMS de rappel ce soir avec les chiffres ?",
-          cloture: "[amount]€ par mois — [impact]. Ou [amount_low]€ pour commencer."
-        }
-      },
-      presse: {
-        portaporte: {
-          accroche: "Bonsoir — 30 secondes. Santé internationale. [impact]. [amount]€ par mois.",
-          argument: "[amount]€ = [impact] = [annual]€ par an. OMS certifié. Résiliable.",
-          objectionQ: "« Pas le temps. »",
-          objectionA: "[impact] pour [amount]€. 90 secondes. Maintenant ?",
-          cloture: "Formulaire sur mon téléphone — 90 secondes. [amount]€ ou [amount_low]€."
-        },
-        telephone: {
-          accroche: "Bonjour — bref. Santé internationale. [impact]. [amount]€ par mois. Ça parle ?",
-          argument: "[impact]. OMS certifié. Résiliable à tout moment.",
-          objectionQ: "« Rappelez. »",
-          objectionA: "Quand exactement ? Je note.",
-          cloture: "Lien SMS — vous signez quand vous voulez. [amount]€ ou [amount_low]€."
-        },
-        evenement: {
-          accroche: "Bonjour — [impact]. Santé internationale. Ça résonne ?",
-          argument: "[amount]€ par mois. [impact]. OMS certifié.",
-          objectionQ: "« Pas le temps. »",
-          objectionA: "QR code — à votre rythme.",
-          cloture: "Notre QR code. [amount]€ ou [amount_low]€."
-        }
-      },
-      hostile: {
-        portaporte: {
-          accroche: "Bonsoir — je ne vais pas vous déranger longtemps. Organisation de santé internationale. Voilà notre carte si jamais ça vous parle un jour.",
-          argument: "[impact] — certifié OMS. Sur notre site.",
-          objectionQ: "« Non, je ne veux pas qu'on vienne me déranger chez moi. »",
-          objectionA: "Je comprends tout à fait. Je m'en vais. Bonne soirée.",
-          cloture: "Bonne soirée."
-        },
-        telephone: {
-          accroche: "Bonjour — santé internationale. Je serai très bref et honnête. Je ne cherche pas à vous convaincre.",
-          argument: "[impact] — certifié OMS. C'est tout ce que je voulais partager.",
-          objectionQ: "« Retirez mon numéro. »",
-          objectionA: "Fait immédiatement. [pause] Juste — [impact]. C'est ce qu'on fait chaque jour.",
-          cloture: "Retiré. Bonne journée."
-        },
-        evenement: {
-          accroche: "Bonjour — pas de pression. Je suis là si vous avez une question.",
-          argument: "[impact]. C'est sur notre panneau.",
-          objectionQ: "« Laissez-moi tranquille. »",
-          objectionA: "Bien sûr. Bonne journée !",
-          cloture: "Passez bien !"
-        }
-      },
-      curieux: {
-        portaporte: {
-          accroche: "Bonsoir ! Organisation de santé internationale — j'imagine que vous avez des questions sur l'efficacité réelle des soins à distance. C'est la vraie question du secteur.",
-          argument: "[impact] — voici notre protocole médical : pathologies prioritaires sélectionnées par les équipes locales selon le burden of disease local, formation du personnel sur 2 ans minimum, suivi des traitements avec télémédecine. Rien n'est laissé au hasard.",
-          objectionQ: "« Comment vous assurez la continuité des soins sans présence permanente sur le terrain ? »",
-          objectionA: "Formation d'agents de santé communautaires locaux sur 24 mois, protocoles standardisés OMS adaptés localement, télémédecine pour les cas complexes, audit médical indépendant semestriel. [impact] — c'est le résultat de cette approche systémique sur 7 ans.",
-          cloture: "[amount]€ par mois — [impact] et notre newsletter médicale trimestrielle avec données cliniques. Pour quelqu'un qui veut comprendre l'impact réel. Ou [amount_low]€ — même accès."
-        },
-        telephone: {
-          accroche: "Bonjour ! Santé internationale — j'ai l'impression que vous aimez comprendre les mécanismes médicaux. Question : quelle pathologie pensez-vous qu'on pourrait éliminer en 10 ans avec les bons moyens ?",
-          argument: "[impact] — notre spécialité : santé maternelle et infantile, là où l'impact par euro est le plus fort. Protocoles OMS, audit médical annuel, suivi des patients à 6 mois minimum.",
-          objectionQ: "« Quelle est votre spécialité médicale — vous n'êtes pas généralistes ? »",
-          objectionA: "Santé maternelle et pédiatrique — c'est là où la mortalité évitable est la plus forte et l'impact par euro le plus élevé. [impact] en soins prénatals et pédiatriques. Je vous envoie notre étude d'efficience comparée ?",
-          cloture: "[amount]€ par mois — [impact] et accès à nos données médicales publiées. Pour quelqu'un qui veut des vrais chiffres cliniques. Ou [amount_low]€."
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous lisez nos données médicales avec attention — des questions sur nos protocoles ?",
-          argument: "[impact] — méthode OMS, formation locale, télémédecine. Voici notre protocole de santé maternelle sur mon téléphone.",
-          objectionQ: "« Quel est votre taux de réussite sur les pathologies traitées ? »",
-          objectionA: "82% de guérison sur les pathologies infectieuses pédiatriques traitées, 91% sur les soins prénatals. Données auditées par un cabinet indépendant. [impact] résulte de ces protocoles précis.",
-          cloture: "[amount]€ par mois — [impact] avec accès à nos données médicales détaillées et auditées. Ou [amount_low]€."
-        }
-      }
-    },
-
-    education: {
-      sceptique: {
-        portaporte: {
-          accroche: "Bonsoir — je travaille pour une organisation d'éducation. Une question directe : est-ce que vous pensez que les programmes d'éducation dans les pays en développement fonctionnent vraiment, ou c'est surtout des photos pour les rapports annuels ? [pause]",
-          argument: "Voilà nos preuves : taux de scolarisation passé de 34% à 89% dans nos zones d'intervention sur 5 ans. Présence biométrique quotidienne. Résultats scolaires publiés. [impact] — co-publié avec l'UNESCO, pas une auto-évaluation.",
-          objectionQ: "« Comment vous savez que les enfants vont vraiment à l'école et pas travailler aux champs ? »",
-          objectionA: "Présence biométrique quotidienne, visite terrain indépendante mensuelle, et un système de bourse conditionnelle qui rend la scolarisation financièrement intéressante pour les familles. [impact] est calculé sur ces données réelles — pas des estimations.",
-          cloture: "[amount]€ par mois — [impact]. L'investissement avec le meilleur ROI documenté au monde, c'est l'éducation. Ou [amount_low]€ — même impact."
-        },
-        telephone: {
-          accroche: "Bonjour — organisation d'éducation internationale. Avant de vous expliquer ce qu'on fait — est-ce que vous avez un doute sur l'efficacité réelle de ces programmes ? [pause] Parce que c'est la bonne question.",
-          argument: "[impact] — taux de scolarisation, résultats académiques, insertion à 5 ans. Co-validé avec l'UNESCO, tout est publié. Notre taux de maintien à l'école est de 94%.",
-          objectionQ: "« Ces programmes sont souvent mal adaptés aux cultures locales. Les enfants apprennent dans une langue qui n'est pas la leur. »",
-          objectionA: "C'est la critique la plus légitime du secteur. Notre réponse : curriculum co-construit avec les communautés, enseignement en langue locale première, nationale en complément. [impact] en est la preuve directe — 94% de maintien.",
-          cloture: "[amount]€ par mois = [impact]. Je vous envoie notre étude UNESCO par email — vous jugez par vous-même. Et [amount_low]€ c'est pareil."
-        },
-        evenement: {
-          accroche: "Bonjour ! Question directe : est-ce que vous croyez que l'éducation est le levier le plus puissant contre la pauvreté intergénérationnelle ? [pause — laissez répondre]",
-          argument: "[impact] — données UNESCO confirmées. Un enfant qui termine le primaire a 40% plus de chances de sortir de la pauvreté. Et notre taux de maintien est de 94%.",
-          objectionQ: "« Ces enfants ont surtout besoin de nourriture, pas d'école. »",
-          objectionA: "Les deux ne s'opposent pas — notre programme intègre un repas scolaire quotidien. C'est même pour ça que les familles y adhèrent. Et l'éducation brise le cycle intergénérationnel — [impact] sur 5 ans d'école change une trajectoire entière.",
-          cloture: "[amount]€ par mois — [impact]. Vérifiable. Mesurable. Co-validé UNESCO. Ou [amount_low]€."
-        }
-      },
-      ouvert: {
-        portaporte: {
-          accroche: "Bonsoir ! — est-ce que vous avez des enfants, ou des nièces, neveux ? [pause] Parce que ce que je fais, c'est m'assurer que des enfants qui n'ont pas la chance d'être nés ici aient accès à la même chose.",
-          argument: "Ce qui me touche dans ce travail : [impact]. Un enfant qui va à l'école a 40% plus de chances de ne pas reproduire la trajectoire de ses parents. Ce n'est pas de la charité — c'est du changement systémique.",
-          objectionQ: "« C'est loin de chez nous. Il y a aussi des enfants qui souffrent en France. »",
-          objectionA: "Absolument — et c'est vrai. [impact] là-bas ne retire rien à ce qu'on fait ici. Et là-bas, avec [amount]€ par mois, vous financez une scolarité complète — ici, ça serait insuffisant pour couvrir les fournitures.",
-          cloture: "[amount]€ par mois — [impact]. Votre café du matin offre à un enfant une année entière d'avenir. C'est envisageable ? Et [amount_low]€ c'est déjà quelque chose."
-        },
-        telephone: {
-          accroche: "Bonjour ! Je vous appelle pour une cause qui me tient profondément à cœur — l'éducation des enfants dans les zones les plus défavorisées. C'est quelque chose qui vous parle ?",
-          argument: "Ce qui me donne de l'espoir : [impact]. Des enfants qui lisent pour la première fois, des filles qui restent à l'école malgré la pression familiale, des villages où le taux d'alphabétisation a doublé en 5 ans.",
-          objectionQ: "« Je préfère agir localement — il y a des enfants en difficulté en France aussi. »",
-          objectionA: "C'est une belle valeur, et c'est complémentaire. Si vous pouvez faire les deux : [impact] à l'international pour le coût d'un café hebdomadaire, en plus de votre engagement local.",
-          cloture: "[amount]€ par mois — [impact]. Vous recevrez les lettres des enfants que vous soutenez — vraiment. C'est humain. Ou [amount_low]€."
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous savez ce qu'un enfant peut accomplir avec une scolarité complète dans une zone où 60% des filles n'arrivent pas à la 6e ? [pause] On le sait exactement — on le mesure.",
-          argument: "[impact] — et ça change des trajectoires pour plusieurs générations. Les photos sur notre stand ? Ce sont des élèves de nos écoles partenaires en 2024.",
-          objectionQ: "« C'est une belle cause. Je vais y réfléchir. »",
-          objectionA: "Bien sûr — prenez le temps qu'il vous faut. Voici notre carte et QR code. Et si vous voulez voir les témoignages des enfants et des enseignants — c'est sur notre site, rubrique 'Terrain'.",
-          cloture: "[amount]€ par mois — [impact]. Une décision avec le cœur et la tête. Ou [amount_low]€ pour commencer."
-        }
-      },
-      presse: {
-        portaporte: {
-          accroche: "Bonsoir — 30 secondes. Éducation internationale. [impact]. [amount]€ par mois.",
-          argument: "[amount]€ = [impact] = [annual]€ par an. Co-validé UNESCO.",
-          objectionQ: "« Pas le temps. »",
-          objectionA: "[impact]. 90 secondes. Maintenant ?",
-          cloture: "Formulaire numérique — on le fait ? [amount]€ ou [amount_low]€."
-        },
-        telephone: {
-          accroche: "Bonjour — bref. Éducation internationale. [impact]. [amount]€ par mois.",
-          argument: "[impact]. UNESCO. Résiliable.",
-          objectionQ: "« Plus tard. »",
-          objectionA: "Quand ? Je prends le créneau.",
-          cloture: "Lien SMS. [amount]€ ou [amount_low]€."
-        },
-        evenement: {
-          accroche: "Bonjour — [impact]. Éducation internationale. Ça parle ?",
-          argument: "[amount]€ par mois. [impact]. UNESCO certifié.",
-          objectionQ: "« Pas le temps. »",
-          objectionA: "QR code — à votre rythme.",
-          cloture: "Notre QR code. [amount]€ ou [amount_low]€."
-        }
-      },
-      hostile: {
-        portaporte: {
-          accroche: "Bonsoir — organisation d'éducation. Je ne vous dérange pas. Notre carte si jamais.",
-          argument: "[impact]. UNESCO certifié. Sur notre site.",
-          objectionQ: "« Non merci. »",
-          objectionA: "Je comprends. Bonne soirée.",
-          cloture: "Bonne soirée."
-        },
-        telephone: {
-          accroche: "Bonjour — éducation internationale. Je serai bref. Je ne cherche pas à vous convaincre.",
-          argument: "[impact] — co-validé UNESCO. C'est tout.",
-          objectionQ: "« Retirez mon numéro. »",
-          objectionA: "Fait immédiatement. Bonne journée.",
-          cloture: "Retiré. Merci."
-        },
-        evenement: {
-          accroche: "Bonjour — pas de pression.",
-          argument: "[impact]. Éducation internationale.",
-          objectionQ: "« Non merci. »",
-          objectionA: "Bien sûr. Bonne journée !",
-          cloture: "Passez bien !"
-        }
-      },
-      curieux: {
-        portaporte: {
-          accroche: "Bonsoir ! Organisation d'éducation internationale — j'imagine que vous avez des questions sur comment on mesure l'impact éducatif à long terme. C'est la vraie difficulté du secteur.",
-          argument: "[impact] — suivi longitudinal sur 5 ans : taux de scolarisation, résultats académiques, insertion professionnelle, transmission intergénérationnelle. Notre modèle est co-publié avec l'UNESCO.",
-          objectionQ: "« Quelle langue d'enseignement vous utilisez — est-ce que vous imposez le français ou l'anglais ? »",
-          objectionA: "Langue locale première — toujours. Nationale en complément à partir du CM1. C'est un principe fondateur co-négocié avec les Ministères de l'éducation locaux. [impact] — 94% de maintien — en est la preuve directe.",
-          cloture: "[amount]€ par mois — [impact] et nos publications UNESCO. Pour quelqu'un qui veut comprendre l'éducation en profondeur. Ou [amount_low]€ — même accès."
-        },
-        telephone: {
-          accroche: "Bonjour ! Éducation internationale — j'ai l'impression que vous aimez comprendre les mécanismes pédagogiques. Question : qu'est-ce qui fait qu'un programme éducatif tient sur le long terme selon vous ?",
-          argument: "[impact] — pédagogie active co-construite localement, évaluation UNESCO, suivi longitudinal 5 ans. Je peux vous envoyer notre étude comparative.",
-          objectionQ: "« Comment vous évaluez les résultats scolaires dans des contextes très différents du système français ? »",
-          objectionA: "On n'applique pas les indicateurs français — on utilise les indicateurs UNESCO adaptés au contexte local, co-définis avec les autorités éducatives locales. [impact] est calculé sur ces critères pertinents, pas sur nos propres standards.",
-          cloture: "[amount]€ par mois — [impact] et notre rapport d'impact pédagogique. Pour quelqu'un qui veut vraiment comprendre avant d'agir. Ou [amount_low]€."
-        },
-        evenement: {
-          accroche: "Bonjour ! Vous regardez nos données scolaires avec attention — des questions sur notre approche pédagogique ?",
-          argument: "[impact] — pédagogie active, co-construction locale, évaluation UNESCO sur 5 ans.",
-          objectionQ: "« Quels sont vos partenaires académiques — c'est qui qui valide vos méthodes ? »",
-          objectionA: "UNESCO, universités locales partenaires, et les Ministères de l'éducation de chaque pays d'intervention. [impact] est co-validé par ces partenaires — pas auto-évalué.",
-          cloture: "[amount]€ par mois — [impact] et accès à nos publications académiques. Ou [amount_low]€."
-        }
-      }
-    }
-  }, // end fr
-
-  en: {
-    humanitaire: {
-      sceptique: {
-        portaporte: {
-          accroche: "Evening — I'm not going to give you the standard pitch. First question: have you ever doubted whether charities actually deliver what they promise? [pause] Because if so, I want to address that before I say anything else.",
-          argument: "Here's our annual report, on my phone. Page 7: 89% of funds go directly to the field. Page 11: [impact] — that's what your monthly donation produces, tracked pound for pound. You can verify it right now if you want.",
-          objectionQ: "\"How do I actually know the money gets where you say it does?\"",
-          objectionA: "I'm not asking you to trust me — I'm asking you to check. Here's our app. [show phone] Our accounts are certified by an independent auditor. And if you search our name on the Charity Commission website, you'll find our financials going back to 2015.",
-          cloture: "Would [amount]€ a month — which means [impact] every single month — be something you'd consider? And if that's a stretch, even [amount_low]€ makes something real happen."
-        },
-        telephone: {
-          accroche: "Hi — I'll be upfront with you. I'm calling about a humanitarian cause, and before I say anything else: have you ever felt let down by a charity's lack of transparency? [silence] Because that's exactly what we've built ourselves around.",
-          argument: "One concrete fact: [impact]. Not a promise — it's what every euro produces on the ground, certified and published in open data. You can verify it while we talk.",
-          objectionQ: "\"How did you get my number? And look, these calls are all the same script...\"",
-          objectionA: "That frustration is completely fair — the sector has real problems. What I can tell you about us: our accounts are fully public, our admin rate is 11%, and I can text you our independent certification right now. Not to convince you — so you can check for yourself.",
-          cloture: "Before you go — one fact: [amount]€ a month is [impact] every month. If that resonates, I'll send you our transparency report. You decide with full information. And [amount_low]€ works too."
-        },
-        evenement: {
-          accroche: "Hi! Straight question: what would it take to prove to you that a humanitarian organisation is actually legit? [pause — let them answer] Because that's the most common question I get, and I have a specific answer.",
-          argument: "Here's our QR code — it goes straight to our certified accounts. [impact], that's what each monthly donation produces, audited quarterly by an independent firm. Not marketing: verifiable figures in 30 seconds.",
-          objectionQ: "\"Honestly, all NGOs are the same — they pocket most of it.\"",
-          objectionA: "You're right to look at the scandals — they exist. That's exactly why we publish absolutely everything. Scan this QR code — our accounts, line by line. If you find anything that doesn't add up, I genuinely want to know.",
-          cloture: "Once you've had a chance to verify — [amount]€ a month is [impact]. Or [amount_low]€ to start — equally welcome."
-        }
-      },
-      ouvert: {
-        portaporte: {
-          accroche: "Evening! I don't usually say this to strangers at their door, but what I saw in the field in Yemen last year genuinely changed me. [pause] Do you have a couple of minutes?",
-          argument: "What you're feeling right now — that pull — it's exactly why I chose this work. [impact]: that's what each month of someone's commitment produces. Real lives, because of a decision made tonight.",
-          objectionQ: "\"I already give to Oxfam... I'm not sure I can stretch to more.\"",
-          objectionA: "What you already do is genuinely meaningful. This isn't instead of that — it's in addition. And [impact] more each month adds to what you're already doing. You've already got the instinct — it's just about amplifying it.",
-          cloture: "[amount]€ a month is [impact] every month. Sound right? And if that's a bit much, [amount_low]€ — the price of a coffee a week — still makes something concrete happen."
-        },
-        telephone: {
-          accroche: "Hi — genuine question straight away: is there an image, a news story, something happening in the world right now that's weighing on you? [pause] Because that's exactly where we work.",
-          argument: "What makes me proud of this job is being able to tell you exactly what your money does, pound for pound. [impact] — concrete, right now, real people.",
-          objectionQ: "\"I'll think about it... can you call me back?\"",
-          objectionA: "Of course. But before I go — [impact] every month. If you're happy to go ahead now, we can set the first payment for two weeks from today — gives you time to verify in the meantime. And you can cancel any time.",
-          cloture: "[amount]€ a month — [impact]. Or [amount_low]€ if that feels better. What works for you?"
-        },
-        evenement: {
-          accroche: "Hi! You stopped at our stand — was there something that caught your attention? [pause] Because if it was a photo or a number... that's intentional. We want it to land.",
-          argument: "[impact] — and behind that number there are stories I'd love to tell you. What you're feeling right now is exactly why I chose this work. Those photos on the stand? That's the field, last week.",
-          objectionQ: "\"It's great but I'd need to talk to my partner first.\"",
-          objectionA: "Absolutely — this is a decision you make together. Here's our card with the QR code. And if it's helpful, I can send you a summary by text tonight so you've got everything to hand.",
-          cloture: "If you do join us — no pressure whatsoever — [amount]€ a month is [impact]. Or [amount_low]€ to start. Entirely your call."
-        }
-      },
-      presse: {
-        portaporte: {
-          accroche: "Evening — 30 seconds. One fact. Your decision. [impact] — that's what every euro we raise produces. Certified field result.",
-          argument: "[amount]€ a month. [impact] every month. [annual]€ over a year. Cancel any time.",
-          objectionQ: "\"I honestly don't have time right now.\"",
-          objectionA: "15 seconds then: [impact] for [amount]€. Yes or no?",
-          cloture: "[amount]€ a month — [impact]. Sign-up takes 90 seconds on my phone. Now? Or [amount_low]€ — same thing, 90 seconds."
-        },
-        telephone: {
-          accroche: "Hi — I'll be brief because you've got better things to do. One fact: [impact]. That's our result. One question: does that mean anything to you?",
-          argument: "[amount]€ a month. [annual]€ over a year. [impact] every month. Cancel whenever.",
-          objectionQ: "\"Call me back tomorrow.\"",
-          objectionA: "What time exactly? I'll book it now — otherwise it won't happen.",
-          cloture: "[amount]€ a month — [impact]. Sign-up link by text in 10 seconds. You sign when you have 2 minutes. Or [amount_low]€ — same link."
-        },
-        evenement: {
-          accroche: "Hi — one second. [impact]. That's us. Rings a bell?",
-          argument: "[amount]€ a month equals [impact]. Digital form, 90 seconds, cancel any time.",
-          objectionQ: "\"No time.\"",
-          objectionA: "I'll send you the link — sign up tonight from your sofa.",
-          cloture: "Link by text now — at your own pace. [amount]€ or [amount_low]€."
-        }
-      },
-      hostile: {
-        portaporte: {
-          accroche: "Evening — I can see you weren't expecting someone at your door, and I completely get that. I'm not here to push anything. Just one thing to show you, if you're open to it.",
-          argument: "The humanitarian sector has had scandals. You're right to be cautious. What makes us different: our accounts are public and certified. [impact] — verifiable on the Charity Commission. I'm not asking you to believe me.",
-          objectionQ: "\"I donated once and never heard anything again. That was my lesson.\"",
-          objectionA: "[pause] That's a real disappointment — and it counts. What I can tell you: we send a field impact report every quarter to our donors. Not a generic email — actual results from the ground. Want to see an example on my phone?",
-          cloture: "I'm not looking for a yes tonight. Here's our card. If you ever feel like checking — we're there. We won't chase you."
-        },
-        telephone: {
-          accroche: "Hi — I know you weren't expecting this call. I'll be straight with you: I'm not trying to sell you anything today. I just want to share one fact.",
-          argument: "[impact] — that's our certified result. If it ever means something to you, our website is there. If not — that's genuinely fine too.",
-          objectionQ: "\"Take me off your list. Right now.\"",
-          objectionA: "Done. [pause] Before I go — is this a matter of principle, or is there a cause that might have spoken to you in a different context?",
-          cloture: "You're off our list as promised. If you ever change your mind — our website. Have a good day."
-        },
-        evenement: {
-          accroche: "Hi — no pitch. I'm here if you have a question.",
-          argument: "What we do in one number: [impact]. It's on our board if you want to read it.",
-          objectionQ: "\"These stands drive me mad. You're in the way.\"",
-          objectionA: "[calm] You're right — I'll step back. [pause] If the curiosity ever comes back, I'm here without the hard sell.",
-          cloture: "Have a good day. Our card is on the table if you come back."
-        }
-      },
-      curieux: {
-        portaporte: {
-          accroche: "Evening! I represent a humanitarian organisation — and I get the sense you're someone who likes to understand how things actually work, not just hear the headline. [pause] Am I wrong?",
-          argument: "[impact] — and here's how we get there: independent selection committee, quarterly field audit, results published in open data. I can walk you through each step. This isn't an estimate — it's a four-year field average.",
-          objectionQ: "\"How do you actually decide where the money goes — who makes that call?\"",
-          objectionA: "Good question — and the answer might surprise you. We don't decide alone: we have an independent selection panel — doctors, development economists — who evaluate projects against published criteria. And [impact] is the result of that rigour.",
-          cloture: "[amount]€ a month is [impact] every month. Plus our field newsletter — you see the concrete results of your donation every quarter. Work for you? And [amount_low]€ works too — same newsletter."
-        },
-        telephone: {
-          accroche: "Hi — open question straight away: are there aspects of how NGOs work that have always intrigued you — or maybe frustrated you? [silence]",
-          argument: "Here's what I love explaining: [impact] — and the journey to get there. Partner selection, logistics, impact measurement. I can walk you through the whole chain — or send you our impact report by email if you'd rather.",
-          objectionQ: "\"What percentage of your budget actually goes to overhead?\"",
-          objectionA: "11% — including this fundraising team. 89% goes to the field. It's in our public report — page 14. I'll email it to you in 30 seconds if you want.",
-          cloture: "[amount]€ a month — [impact] and our quarterly impact report. You ask the questions — we answer. That's our commitment. Or [amount_low]€ to start carefully."
-        },
-        evenement: {
-          accroche: "Hi! I can see you're reading our panels carefully — questions? I'm here to actually answer them, not just hand you a leaflet.",
-          argument: "I love explaining what's behind the numbers. Take [impact] — here's how we arrive at that figure, step by step. [show phone with report]",
-          objectionQ: "\"What's the actual difference between you and MSF or Oxfam?\"",
-          objectionA: "Good question — and the answer is genuinely different for each. We specialise in [specific area]. MSF is emergency medicine. Oxfam is development and advocacy. We don't overlap — we're complementary. And [impact] is our specific contribution.",
-          cloture: "[amount]€ a month — [impact] and access to our field data. For someone who wants to actually understand their impact — this is built for you. Or [amount_low]€ to start."
-        }
-      }
-    }
-  }
-};
-
-// Smart fallback for remaining 7 causes — expert-quality, cause-specific content
-function getFallbackPitch(cause, profile, channel, lang) {
-  const causeMeta = CAUSES_META[cause];
-  const causeName = causeMeta ? causeMeta[lang] : cause;
-  const causeNameFr = causeMeta ? causeMeta.fr : cause;
-
-  // Cause-specific hooks and facts (FR)
-  const causeHooks = {
-    animal: {
-      sceptique: { hook: "la souffrance animale dans les élevages industriels est un sujet qui dérange — et il faut regarder les chiffres en face", fact: "1 milliard d'animaux euthanasiés chaque année en France, dont 60% auraient pu être sauvés avec les bons moyens" },
-      ouvert: { hook: "est-ce que vous avez un animal à la maison", fact: "chaque année, 100 000 animaux abandonnés en France cherchent un refuge" },
-      presse: { hook: "100 000 animaux abandonnés par an en France", fact: "[impact] — chaque don mensuel finance des soins vétérinaires et des adoptions" },
-      hostile: { hook: "protection animale", fact: "[impact]" },
-      curieux: { hook: "saviez-vous que la France est l'un des pays européens avec le plus fort taux d'abandon animal", fact: "notre méthode de placement : [impact] — avec suivi post-adoption et taux de succès de 94%" }
-    },
-    culture: {
-      sceptique: { hook: "la culture est souvent perçue comme un luxe — je veux vous montrer pourquoi c'est faux", fact: "1 enfant sur 3 en France n'a jamais mis les pieds dans un musée. [impact] — c'est notre réponse concrète" },
-      ouvert: { hook: "est-ce qu'il y a une forme d'art ou de culture qui vous a profondément touché dans votre vie", fact: "[impact] — des expériences culturelles pour ceux qui n'y ont jamais accès" },
-      presse: { hook: "accès à la culture", fact: "[impact]" },
-      hostile: { hook: "accès à la culture", fact: "[impact]" },
-      curieux: { hook: "comment mesure-t-on l'impact de la culture sur le développement humain", fact: "[impact] — études OCDE sur le lien entre accès culturel et réussite scolaire" }
-    },
-    recherche: {
-      sceptique: { hook: "la recherche médicale, ça peut sembler loin de vous — je vais vous montrer pourquoi c'est la décision qui a le meilleur retour sur investissement possible", fact: "[impact] — chaque euro de recherche fondamentale génère en moyenne 8€ de bénéfices médicaux sur 20 ans" },
-      ouvert: { hook: "est-ce que vous avez été touché de près ou de loin par une maladie grave dans votre entourage", fact: "[impact] — chaque don finance des heures de recherche sur des maladies sans traitement" },
-      presse: { hook: "recherche médicale", fact: "[impact]" },
-      hostile: { hook: "recherche médicale", fact: "[impact]" },
-      curieux: { hook: "quelle est selon vous la prochaine grande percée médicale qui va changer le monde", fact: "[impact] — financement de recherche sur [pathologie spécifique], publication dans des revues à comité de lecture" }
-    },
-    handicap: {
-      sceptique: { hook: "l'inclusion des personnes handicapées en France, c'est encore trop souvent des déclarations d'intention — voici ce qu'on fait concrètement", fact: "[impact] — taux d'insertion professionnelle de nos bénéficiaires : 68%, contre 36% pour la moyenne nationale" },
-      ouvert: { hook: "est-ce que vous connaissez quelqu'un dans votre entourage qui vit avec un handicap", fact: "[impact] — des parcours d'inclusion professionnelle qui changent des vies" },
-      presse: { hook: "inclusion handicap", fact: "[impact]" },
-      hostile: { hook: "inclusion du handicap", fact: "[impact]" },
-      curieux: { hook: "quelle est la vraie différence entre intégration et inclusion pour les personnes handicapées", fact: "[impact] — approche par la conception universelle, pas l'adaptation" }
-    },
-    ages: {
-      sceptique: { hook: "l'isolement des personnes âgées en France — on parle de 5 millions de personnes qui ne voient personne pendant des semaines. Voici ce qu'on fait", fact: "[impact] — taux de réduction de l'isolement mesuré sur 12 mois de programme" },
-      ouvert: { hook: "est-ce que vous avez des grands-parents, ou des parents âgés", fact: "[impact] — des visites régulières, des liens humains recréés" },
-      presse: { hook: "isolement des personnes âgées", fact: "[impact]" },
-      hostile: { hook: "personnes âgées isolées", fact: "[impact]" },
-      curieux: { hook: "saviez-vous que l'isolement social tue autant que le tabac chez les personnes âgées", fact: "[impact] — méthode de lien social basée sur la recherche en gérontologie" }
-    },
-    enfance: {
-      sceptique: { hook: "la protection de l'enfance en France — on parle de 360 000 enfants suivis par l'aide sociale à l'enfance. Voici ce qu'on fait concrètement pour eux", fact: "[impact] — taux de sortie positive de nos programmes : 76%, contre 41% pour les placements classiques" },
-      ouvert: { hook: "est-ce que vous pensez souvent aux enfants qui grandissent sans filet familial", fact: "[impact] — des enfants qui trouvent des adultes de référence stables" },
-      presse: { hook: "protection de l'enfance", fact: "[impact]" },
-      hostile: { hook: "protection de l'enfance", fact: "[impact]" },
-      curieux: { hook: "quelle est selon vous la chose la plus importante pour qu'un enfant en difficulté s'en sorte", fact: "[impact] — notre modèle : mentor adulte stable + accompagnement scolaire + soutien familial" }
-    },
-    droits: {
-      sceptique: { hook: "les droits humains, ça peut sembler abstrait — je vais vous montrer ce que ça veut dire en pratique, avec des chiffres vérifiables", fact: "[impact] — cas documentés, défense juridique, résultats mesurables devant les tribunaux" },
-      ouvert: { hook: "est-ce qu'il y a une injustice dans le monde qui vous révolte vraiment", fact: "[impact] — des personnes défendues, des droits restaurés" },
-      presse: { hook: "droits humains", fact: "[impact]" },
-      hostile: { hook: "droits humains", fact: "[impact]" },
-      curieux: { hook: "quelle est selon vous la violation des droits humains la plus sous-médiatisée en ce moment", fact: "[impact] — litige stratégique, plaidoyer, documentation des violations" }
-    }
-  };
-
-  // Cause-specific hooks (EN)
-  const causeHooksEn = {
-    animal: {
-      sceptique: { hook: "animal welfare in factory farming is uncomfortable to look at — but the numbers are stark", fact: "over 1 billion animals euthanised each year, 60% of whom could have been saved with adequate resources" },
-      ouvert: { hook: "do you have a pet at home", fact: "100,000 animals abandoned every year in France alone — [impact] every month" },
-      presse: { hook: "100,000 animals abandoned per year", fact: "[impact] per month" },
-      hostile: { hook: "animal protection", fact: "[impact]" },
-      curieux: { hook: "did you know France has one of the highest pet abandonment rates in Europe", fact: "[impact] — our post-adoption success rate is 94%" }
-    },
-    culture: {
-      sceptique: { hook: "culture is often seen as a luxury — I want to show you why that's wrong", fact: "1 in 3 children in France has never set foot in a museum. [impact] — our concrete response" },
-      ouvert: { hook: "is there a form of art or culture that's deeply moved you in your life", fact: "[impact] — cultural experiences for those who've never had access" },
-      presse: { hook: "access to culture", fact: "[impact]" },
-      hostile: { hook: "access to culture", fact: "[impact]" },
-      curieux: { hook: "how do you actually measure the impact of culture on human development", fact: "[impact] — OECD studies on the link between cultural access and educational outcomes" }
-    },
-    recherche: {
-      sceptique: { hook: "medical research can seem distant — I want to show you why it has the best return on investment of any cause", fact: "[impact] — every euro of basic research generates on average €8 in medical benefits over 20 years" },
-      ouvert: { hook: "have you been affected by serious illness in people close to you", fact: "[impact] — funding research hours on diseases with no treatment" },
-      presse: { hook: "medical research", fact: "[impact]" },
-      hostile: { hook: "medical research", fact: "[impact]" },
-      curieux: { hook: "what do you think will be the next major medical breakthrough", fact: "[impact] — peer-reviewed research funding, published results" }
-    },
-    handicap: {
-      sceptique: { hook: "inclusion of disabled people in France is still too often good intentions — here's what we actually do", fact: "[impact] — our beneficiaries' employment rate: 68%, vs 36% national average" },
-      ouvert: { hook: "do you know someone living with a disability", fact: "[impact] — professional inclusion pathways that change lives" },
-      presse: { hook: "disability inclusion", fact: "[impact]" },
-      hostile: { hook: "disability inclusion", fact: "[impact]" },
-      curieux: { hook: "what's the real difference between integration and inclusion for disabled people", fact: "[impact] — universal design approach, not just adaptation" }
-    },
-    ages: {
-      sceptique: { hook: "social isolation among the elderly in France — we're talking 5 million people who see nobody for weeks at a time. Here's what we do about it", fact: "[impact] — reduction in isolation measured over 12-month programmes" },
-      ouvert: { hook: "do you have elderly parents or grandparents", fact: "[impact] — regular visits, human connection restored" },
-      presse: { hook: "elderly isolation", fact: "[impact]" },
-      hostile: { hook: "elderly isolation", fact: "[impact]" },
-      curieux: { hook: "did you know social isolation kills as many elderly people as smoking", fact: "[impact] — social connection method based on gerontology research" }
-    },
-    enfance: {
-      sceptique: { hook: "child protection in France — 360,000 children followed by social services. Here's what we do concretely", fact: "[impact] — positive outcomes from our programmes: 76%, vs 41% for standard placements" },
-      ouvert: { hook: "do you think about children growing up without a family safety net", fact: "[impact] — children finding stable adult role models" },
-      presse: { hook: "child protection", fact: "[impact]" },
-      hostile: { hook: "child protection", fact: "[impact]" },
-      curieux: { hook: "what do you think is the most important thing for a child in difficulty to turn their life around", fact: "[impact] — our model: stable adult mentor + academic support + family support" }
-    },
-    droits: {
-      sceptique: { hook: "human rights can seem abstract — I'll show you what it means in practice, with verifiable numbers", fact: "[impact] — documented cases, legal defence, measurable results in court" },
-      ouvert: { hook: "is there an injustice in the world that genuinely makes you angry", fact: "[impact] — people defended, rights restored" },
-      presse: { hook: "human rights", fact: "[impact]" },
-      hostile: { hook: "human rights", fact: "[impact]" },
-      curieux: { hook: "what do you think is the most under-reported human rights violation right now", fact: "[impact] — strategic litigation, advocacy, documentation of violations" }
-    }
-  };
-
-  const hooks = lang === 'en' ? (causeHooksEn[cause] || causeHooksEn.droits) : (causeHooks[cause] || causeHooks.droits);
-  const h = hooks[profile] || hooks.ouvert;
-
-  const fallbacks = {
-    fr: {
-      sceptique: {
-        portaporte: {
-          accroche: `Bonsoir — je travaille pour une organisation de ${causeNameFr}. Ma première question : ${h.hook} ? [pause] Parce que c'est exactement là qu'on intervient — et je veux vous montrer les preuves avant de vous parler de quoi que ce soit d'autre.`,
-          argument: `${h.fact}. Voici notre rapport annuel sur mon téléphone — page par page, certifié par un commissaire aux comptes indépendant. Je ne vous demande pas de me croire : je vous demande de vérifier.`,
-          objectionQ: `« Comment je sais que c'est sérieux et pas du marketing ? »`,
-          objectionA: `Je ne vous demande pas de me faire confiance — je vous demande de vérifier. Notre bilan est public et certifié. [impact] — c'est notre réalité quotidienne, pas une promesse. Vous pouvez taper notre nom sur le site de Bercy pour trouver nos comptes.`,
-          cloture: `[amount]€ par mois — [impact]. Un engagement transparent et vérifiable. Ou [amount_low]€ pour commencer — même rigueur.`
-        },
-        telephone: {
-          accroche: `Bonjour — organisation de ${causeNameFr}. Je vais être direct avec vous : ${h.hook} ? [pause] Parce que c'est là qu'on se différencie — sur les preuves, pas les promesses.`,
-          argument: `${h.fact}. Certifié, publié, vérifiable. Notre taux d'administratif est publié et certifié.`,
-          objectionQ: `« Prouvez que c'est sérieux. »`,
-          objectionA: `Notre site, notre rapport, nos certifications — tout est en ligne. [impact] — ligne par ligne. Je vous envoie le lien par email maintenant si vous voulez.`,
-          cloture: `[amount]€ par mois = [impact]. Je vous envoie notre rapport par email — vous jugez par vous-même. Et [amount_low]€ c'est pareil.`
-        },
-        evenement: {
-          accroche: `Bonjour — ${causeNameFr}. Question directe : qu'est-ce qui vous prouverait qu'on est vraiment sérieux ? [pause — laissez répondre]`,
-          argument: `${h.fact}. Certifié. Scannez notre QR code — tout est là.`,
-          objectionQ: `« C'est du marketing comme les autres. »`,
-          objectionA: `Voici nos certifications indépendantes. Scannez ce QR code — [impact] est vérifiable ligne par ligne en 30 secondes.`,
-          cloture: `[amount]€ par mois — [impact]. Vérifiable. Ou [amount_low]€.`
-        }
-      },
-      ouvert: {
-        portaporte: {
-          accroche: `Bonsoir ! Je travaille pour une organisation de ${causeNameFr}. Une vraie question : ${h.hook} ? [pause] Parce que c'est exactement pourquoi j'ai choisi ce travail.`,
-          argument: `Ce qui me motive chaque jour : [impact]. Ce n'est pas de la compassion abstraite — c'est du changement concret et mesurable, mois après mois.`,
-          objectionQ: `« Je vais y réfléchir — c'est beaucoup à décider maintenant. »`,
-          objectionA: `Tout à fait — et c'est une bonne chose de réfléchir. Voici notre carte. Et [impact] chaque mois, c'est ce qui se passe pendant que vous réfléchissez.`,
-          cloture: `[amount]€ par mois — [impact]. Envisageable ? Ou [amount_low]€ pour commencer.`
-        },
-        telephone: {
-          accroche: `Bonjour ! ${causeNameFr} — une vraie question : ${h.hook} ? [pause] Parce que c'est exactement là qu'on intervient.`,
-          argument: `[impact] — concrètement, chaque mois. Ce n'est pas abstrait : ce sont des gens réels dont la vie change.`,
-          objectionQ: `« Je vais réfléchir. »`,
-          objectionA: `Bien sûr. Je vous envoie notre présentation par email — vous décidez à votre rythme. Et si [amount]€ c'est trop, [amount_low]€ c'est déjà quelque chose.`,
-          cloture: `[amount]€ par mois — [impact]. Vous pouvez arrêter quand vous voulez. Ou [amount_low]€.`
-        },
-        evenement: {
-          accroche: `Bonjour ! Vous connaissez notre cause — ${causeNameFr} ? [pause] Parce que ce qu'on fait ici mérite 2 minutes.`,
-          argument: `[impact] — c'est notre réalité quotidienne. Les photos sur notre stand, c'est le terrain cette année.`,
-          objectionQ: `« C'est bien. Je vais y réfléchir. »`,
-          objectionA: `Voici notre carte et QR code — tout est là. Prenez le temps qu'il faut. Et si vous décidez, ça prend 90 secondes.`,
-          cloture: `[amount]€ par mois — [impact]. Rejoignez-nous ? Ou commencez par [amount_low]€.`
-        }
-      },
-      presse: {
-        portaporte: {
-          accroche: `Bonsoir — 30 secondes. ${causeNameFr}. [impact]. [amount]€ par mois.`,
-          argument: `[amount]€ = [impact] = [annual]€ par an. Résiliable quand vous voulez.`,
-          objectionQ: `« Pas le temps. »`,
-          objectionA: `[impact] pour [amount]€. 90 secondes. Maintenant ?`,
-          cloture: `Formulaire numérique — on le fait ? [amount]€ ou [amount_low]€.`
-        },
-        telephone: {
-          accroche: `Bonjour — bref. ${causeNameFr}. Un fait : [impact]. [amount]€ par mois. Ça parle ?`,
-          argument: `[impact]. Résiliable à tout moment. Sans condition.`,
-          objectionQ: `« Plus tard. »`,
-          objectionA: `Quand exactement ? Je prends le créneau maintenant.`,
-          cloture: `Lien par SMS — vous signez quand vous avez 2 minutes. [amount]€ ou [amount_low]€.`
-        },
-        evenement: {
-          accroche: `Bonjour — [impact]. ${causeNameFr}. Ça résonne ?`,
-          argument: `[amount]€ par mois. [impact]. Formulaire numérique, 90 secondes.`,
-          objectionQ: `« Pas le temps. »`,
-          objectionA: `QR code — vous le faites ce soir depuis chez vous.`,
-          cloture: `Notre QR code. [amount]€ ou [amount_low]€ — à votre rythme.`
-        }
-      },
-      hostile: {
-        portaporte: {
-          accroche: `Bonsoir — je ne vais pas vous retenir. ${causeNameFr}. Voilà notre carte si jamais ça vous parle un jour.`,
-          argument: `[impact] — certifié, publié. Je ne vous demande rien ce soir.`,
-          objectionQ: `« Non. Je ne veux pas être dérangé chez moi. »`,
-          objectionA: `Je comprends totalement. Je m'en vais. Bonne soirée.`,
-          cloture: `Bonne soirée.`
-        },
-        telephone: {
-          accroche: `Bonjour — ${causeNameFr}. Je serai bref et honnête. Je ne cherche pas à vous convaincre aujourd'hui.`,
-          argument: `[impact] — c'est notre réalité. C'est tout ce que je voulais partager.`,
-          objectionQ: `« Retirez mon numéro. »`,
-          objectionA: `Fait immédiatement. [pause] Juste — [impact]. C'est ce qu'on fait chaque jour.`,
-          cloture: `Retiré comme promis. Bonne journée.`
-        },
-        evenement: {
-          accroche: `Bonjour — pas de pression. Je suis là si vous avez une question.`,
-          argument: `[impact]. ${causeNameFr}. C'est sur notre panneau.`,
-          objectionQ: `« Non merci. »`,
-          objectionA: `Bien sûr. Bonne journée !`,
-          cloture: `Passez bien !`
-        }
-      },
-      curieux: {
-        portaporte: {
-          accroche: `Bonsoir ! Organisation de ${causeNameFr} — j'imagine que vous avez des questions sur comment ça fonctionne vraiment. ${h.hook} ? [pause]`,
-          argument: `${h.fact}. Avec méthode, suivi, publication annuelle. Je peux vous expliquer chaque étape.`,
-          objectionQ: `« Comment vous mesurez l'impact exactement ? »`,
-          objectionA: `Indicateurs définis en amont avec des experts indépendants, audit annuel, publication en open data. [impact] est calculé sur ces bases — pas auto-évalué.`,
-          cloture: `[amount]€ par mois — [impact] et rapport d'impact complet. Pour quelqu'un qui veut vraiment comprendre. Ou [amount_low]€ — même accès.`
-        },
-        telephone: {
-          accroche: `Bonjour ! ${causeNameFr} — j'ai l'impression que vous aimez comprendre avant de vous engager. Bonne question : ${h.hook} ?`,
-          argument: `${h.fact}. Méthode transparente, audit annuel, publication complète.`,
-          objectionQ: `« Comment fonctionne votre organisation exactement — qui décide ? »`,
-          objectionA: `Gouvernance indépendante, conseil d'administration avec des experts extérieurs, financement 80% privé. [impact] résulte de cette rigueur — tout est publié.`,
-          cloture: `[amount]€ par mois — [impact] et accès à tous nos rapports. Pour quelqu'un qui veut des preuves. Ou [amount_low]€.`
-        },
-        evenement: {
-          accroche: `Bonjour ! Vous lisez nos données avec attention — des questions sur notre méthode d'impact pour ${causeNameFr} ?`,
-          argument: `${h.fact}. Mesuré, audité, publié. Voici notre rapport sur mon téléphone.`,
-          objectionQ: `« Quels sont vos indicateurs d'impact — comment vous les définissez ? »`,
-          objectionA: `Indicateurs co-définis avec des experts indépendants spécialisés en ${causeNameFr}, validés annuellement. [impact] résulte de cette rigueur.`,
-          cloture: `[amount]€ par mois — [impact] avec accès à tous nos indicateurs détaillés. Ou [amount_low]€.`
-        }
-      }
-    },
-    en: {
-      sceptique: {
-        portaporte: {
-          accroche: `Evening — I work in ${causeName}. First question: ${h.hook}? [pause] Because that's exactly where we operate — and I want to show you the evidence before I say anything else.`,
-          argument: `${h.fact}. Here's our annual report on my phone — page by page, certified by an independent auditor. I'm not asking you to trust me: I'm asking you to check.`,
-          objectionQ: `"How do I know this is real and not just marketing?"`,
-          objectionA: `I'm not asking you to trust me — I'm asking you to verify. Our accounts are public and certified. [impact] — that's our daily reality, not a promise.`,
-          cloture: `[amount]€ a month — [impact]. Transparent and verifiable. Or [amount_low]€ to start.`
-        },
-        telephone: {
-          accroche: `Hi — ${causeName} organisation. Straight question: ${h.hook}? [pause] Because that's where we're different — on evidence, not promises.`,
-          argument: `${h.fact}. Certified, published, verifiable.`,
-          objectionQ: `"Prove it's genuine."`,
-          objectionA: `Our site, our report, our certifications — all online. [impact] — line by line. I'll send you the link by email now if you'd like.`,
-          cloture: `[amount]€ a month = [impact]. I'll send our report by email — you judge for yourself. And [amount_low]€ works too.`
-        },
-        evenement: {
-          accroche: `Hi — ${causeName}. Direct question: what would prove to you that we're actually serious? [pause — let them answer]`,
-          argument: `${h.fact}. Certified. Scan our QR code — everything's there.`,
-          objectionQ: `"It's the same as every other charity."`,
-          objectionA: `Here are our independent certifications. Scan this QR code — [impact] is verifiable line by line in 30 seconds.`,
-          cloture: `[amount]€ a month — [impact]. Verifiable. Or [amount_low]€.`
-        }
-      },
-      ouvert: {
-        portaporte: {
-          accroche: `Evening! I work in ${causeName}. Genuine question: ${h.hook}? [pause] Because that's exactly why I chose this work.`,
-          argument: `What drives me every day: [impact]. Not abstract compassion — concrete, measurable change, month after month.`,
-          objectionQ: `"I need to think about it — it's a lot to decide right now."`,
-          objectionA: `Absolutely — and thinking it through is good. Here's our card. And [impact] every month is what happens while you think.`,
-          cloture: `[amount]€ a month — [impact]. Feel right? Or [amount_low]€ to start.`
-        },
-        telephone: {
-          accroche: `Hi! ${causeName} — genuine question: ${h.hook}? [pause] Because that's exactly where we work.`,
-          argument: `[impact] — concretely, every month. Not abstract: real people whose lives change.`,
-          objectionQ: `"I'll think about it."`,
-          objectionA: `Of course. I'll send our presentation by email — you decide at your own pace. And if [amount]€ is too much, [amount_low]€ already means something.`,
-          cloture: `[amount]€ a month — [impact]. Cancel whenever you want. Or [amount_low]€.`
-        },
-        evenement: {
-          accroche: `Hi! You know the ${causeName} cause? [pause] Because what we do here is worth 2 minutes.`,
-          argument: `[impact] — that's our daily reality. The photos on our stand are from the field this year.`,
-          objectionQ: `"It's great. I'll think about it."`,
-          objectionA: `Here's our card and QR code — everything's there. Take the time you need. And if you decide, it takes 90 seconds.`,
-          cloture: `[amount]€ a month — [impact]. Join us? Or start with [amount_low]€.`
-        }
-      },
-      presse: {
-        portaporte: {
-          accroche: `Evening — 30 seconds. ${causeName}. [impact]. [amount]€ a month.`,
-          argument: `[amount]€ = [impact] = [annual]€ a year. Cancel any time.`,
-          objectionQ: `"No time."`,
-          objectionA: `[impact] for [amount]€. 90 seconds. Now?`,
-          cloture: `Digital form — shall we? [amount]€ or [amount_low]€.`
-        },
-        telephone: {
-          accroche: `Hi — brief. ${causeName}. One fact: [impact]. [amount]€ a month. Ring any bells?`,
-          argument: `[impact]. Cancel any time. No conditions.`,
-          objectionQ: `"Later."`,
-          objectionA: `When exactly? I'll book the slot now.`,
-          cloture: `Sign-up link by text — you sign when you have 2 minutes. [amount]€ or [amount_low]€.`
-        },
-        evenement: {
-          accroche: `Hi — [impact]. ${causeName}. Resonates?`,
-          argument: `[amount]€ a month. [impact]. Digital form, 90 seconds.`,
-          objectionQ: `"No time."`,
-          objectionA: `QR code — do it tonight from home.`,
-          cloture: `Our QR code. [amount]€ or [amount_low]€ — at your own pace.`
-        }
-      },
-      hostile: {
-        portaporte: {
-          accroche: `Evening — I won't keep you. ${causeName}. Here's our card if it ever resonates.`,
-          argument: `[impact] — certified, published. I'm not asking anything of you tonight.`,
-          objectionQ: `"No. I don't want to be disturbed at home."`,
-          objectionA: `Completely understood. I'm going. Good evening.`,
-          cloture: `Good evening.`
-        },
-        telephone: {
-          accroche: `Hi — ${causeName}. I'll be brief and honest. I'm not trying to convince you today.`,
-          argument: `[impact] — that's our reality. That's all I wanted to share.`,
-          objectionQ: `"Remove my number."`,
-          objectionA: `Done immediately. [pause] Just — [impact]. That's what we do every day.`,
-          cloture: `Removed as promised. Have a good day.`
-        },
-        evenement: {
-          accroche: `Hi — no pressure. I'm here if you have a question.`,
-          argument: `[impact]. ${causeName}. It's on our board.`,
-          objectionQ: `"No thanks."`,
-          objectionA: `Of course. Have a good day!`,
-          cloture: `Have a great day!`
-        }
-      },
-      curieux: {
-        portaporte: {
-          accroche: `Evening! ${causeName} organisation — I imagine you have questions about how it actually works. ${h.hook}? [pause]`,
-          argument: `${h.fact}. With methodology, tracking, annual publication. I can walk you through each step.`,
-          objectionQ: `"How do you actually measure impact?"`,
-          objectionA: `Indicators defined upfront with independent experts, annual audit, open data publication. [impact] is calculated on these bases — not self-assessed.`,
-          cloture: `[amount]€ a month — [impact] and full impact report. For someone who really wants to understand. Or [amount_low]€ — same access.`
-        },
-        telephone: {
-          accroche: `Hi! ${causeName} — I get the sense you like to understand before committing. Question: ${h.hook}?`,
-          argument: `${h.fact}. Transparent methodology, annual audit, full publication.`,
-          objectionQ: `"How exactly does your organisation work — who makes the decisions?"`,
-          objectionA: `Independent governance, external expert board, 80% privately funded. [impact] results from this rigour — everything is published.`,
-          cloture: `[amount]€ a month — [impact] and access to all our reports. For someone who wants evidence. Or [amount_low]€.`
-        },
-        evenement: {
-          accroche: `Hi! You're reading our data carefully — questions about our impact methodology for ${causeName}?`,
-          argument: `${h.fact}. Measured, audited, published. Here's our report on my phone.`,
-          objectionQ: `"What are your impact indicators — how are they defined?"`,
-          objectionA: `Indicators co-defined with independent experts specialising in ${causeName}, validated annually. [impact] results from that rigour.`,
-          cloture: `[amount]€ a month — [impact] with access to all our detailed indicators. Or [amount_low]€.`
-        }
-      }
-    }
-  };
-  return fallbacks[lang]?.[profile]?.[channel] || fallbacks.fr.ouvert.portaporte;
-}
-
+// ===== PITCH GENERATION — uses premium engine =====
 function getPitch(cause, profile, channel, lang) {
-  const data = PITCHES[lang]?.[cause]?.[profile]?.[channel];
-  if (data) return data;
-  // Try other language as fallback
-  const dataFr = PITCHES.fr?.[cause]?.[profile]?.[channel];
-  if (dataFr && lang === 'en') return getFallbackPitch(cause, profile, channel, lang);
-  if (dataFr) return dataFr;
-  return getFallbackPitch(cause, profile, channel, lang);
+  return generateEnhancedTemplate(cause, profile, state.impact || '', state.amount, channel, lang);
 }
+
 
 // ===== WIZARD STATE MANAGEMENT =====
 function selectCause(id) {
@@ -2914,76 +2058,13 @@ function updateSlider() {
   display.innerHTML = `= <strong>${annual}€ ${annualLabel}</strong> — soit <strong id="impact-annual-calc">${impact} × 12</strong>`;
 }
 
-// ===== AI PITCH GENERATION =====
-function getProfileDescription(profile) {
-  const desc = {
-    sceptique: 'méfiant, demande des preuves, peu émotionnel',
-    ouvert: 'réceptif, empathique, décide facilement',
-    presse: 'pressé, veut aller droit au but, peu de temps',
-    hostile: 'fermé, ne veut pas être dérangé',
-    curieux: 'intellectuel, pose beaucoup de questions, aime comprendre'
-  };
-  return desc[profile] || profile;
-}
-
-async function generateAIPitch(cause, profile, impact, amount, channel, lang) {
-  const causeMeta = CAUSES_META[cause];
-  const causeName = causeMeta ? (lang === 'en' ? causeMeta.en : causeMeta.fr) : cause;
-
-  const systemPrompt = `Tu es un expert en collecte de fonds face-à-face avec 15 ans d'expérience terrain. Tu génères des pitchs de collecte ultra-personnalisés, courts et percutants. Jamais de phrases génériques. Toujours basé sur la psychologie du donateur et des techniques éprouvées.`;
-
-  const userPrompt = `Génère un pitch de collecte de fonds pour:
-- Cause: ${causeName}
-- Profil donateur: ${profile} (${getProfileDescription(profile)})
-- Canal: ${channel}
-- Impact concret: ${impact} pour ${amount}€/mois
-- Langue: ${lang === 'en' ? 'English' : 'Français'}
-
-Format STRICT (réponds UNIQUEMENT avec ce JSON, rien d'autre):
-{
-  "accroche": "L'ouverture (max 2 phrases, jamais 'je travaille pour...')",
-  "argument": "L'argument principal avec l'impact tissé naturellement (max 2 phrases)",
-  "objectionQ": "L'objection la plus probable pour ce profil (verbatim, entre guillemets)",
-  "objectionA": "La réponse à l'objection (max 2 phrases, ton humain)",
-  "cloture": "La clôture avec technique deux paliers: prix principal et prix alternatif (1 phrase)",
-  "score_empathie": 75,
-  "score_clarte": 82,
-  "score_impact": 88,
-  "score_closing": 71,
-  "conseil": "Un conseil spécifique pour ce profil+canal (1 phrase)"
-}`;
-
-  const key = localStorage.getItem('anthropic_key') || '';
-  if (!key || key === 'PLACEHOLDER') throw new Error('no key');
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5',
-      max_tokens: 400,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }]
-    })
-  });
-
-  if (!response.ok) throw new Error('API error ' + response.status);
-  const data = await response.json();
-  const parsed = JSON.parse(data.content[0].text);
-  parsed._isAI = true;
-  return parsed;
-}
+// (AI pitch generation removed — premium template engine used instead)
 
 // ===== PITCH GENERATION =====
 function generatePitch() {
   if (!state.cause || !state.profile || !state.channel) return;
   state.impact = document.getElementById('impact-input').value || (state.lang === 'fr' ? '1 repas pour 1€' : '1 meal for €1');
 
-  // Hide steps, show generating
   document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
   document.getElementById('wizard-progress').style.display = 'none';
   const genSection = document.getElementById('generating-section');
@@ -3007,115 +2088,69 @@ function generatePitch() {
   const fill = document.getElementById('progress-fill');
   const label = document.getElementById('gen-label');
 
-  // Check if we have an API key — show AI loading state
-  const hasKey = !!(localStorage.getItem('anthropic_key') || '').trim();
-
-  if (hasKey) {
-    // Show AI loading spinner
-    label.innerHTML = state.lang === 'fr' ? 'Génération de votre pitch par l\'IA...' : 'AI generating your pitch...';
-    fill.style.width = '15%';
-
-    // Start AI call in parallel with progressive bar
-    generateAIPitch(state.cause, state.profile, state.impact, state.amount, state.channel, state.lang)
-      .then(aiPitch => {
-        fill.style.width = '100%';
-        setTimeout(() => showResult(aiPitch), 300);
-      })
-      .catch(() => {
-        // Fallback to template on error
-        fill.style.width = '100%';
-        setTimeout(() => showResult(null), 300);
-      });
-
-    // Animate progress bar while AI works
-    let pct = 15;
-    const barInterval = setInterval(() => {
-      pct = Math.min(pct + 3, 88);
-      fill.style.width = pct + '%';
-      if (pct >= 88) clearInterval(barInterval);
-    }, 300);
-
-  } else {
-    // Template mode — fast progress bar
-    let idx = 0;
-    const interval = setInterval(() => {
-      if (idx < steps.length) {
-        label.textContent = steps[idx];
-        fill.style.width = ((idx + 1) / steps.length * 100) + '%';
-        idx++;
-      } else {
-        clearInterval(interval);
-        setTimeout(() => showResult(null), 400);
-      }
-    }, 320);
-  }
+  let idx = 0;
+  const interval = setInterval(() => {
+    if (idx < steps.length) {
+      label.textContent = steps[idx];
+      fill.style.width = ((idx + 1) / steps.length * 100) + '%';
+      idx++;
+    } else {
+      clearInterval(interval);
+      setTimeout(() => showResult(), 400);
+    }
+  }, 320);
 }
 
-function showResult(aiPitch) {
+function showResult() {
   document.getElementById('generating-section').style.display = 'none';
   const resultSection = document.getElementById('result-section');
   resultSection.style.display = 'block';
   window.scrollTo({ top: document.getElementById('main').offsetTop - 64, behavior: 'smooth' });
 
   const lang = state.lang;
-  const isAI = aiPitch && aiPitch._isAI;
-  const pitch = aiPitch || getPitch(state.cause, state.profile, state.channel, lang);
+  const pitch = getPitch(state.cause, state.profile, state.channel, lang);
   const impact = state.impact;
   const amount = state.amount;
-  const annual = amount * 12;
-
-  // Apply template replacements
-  const amountLow = Math.max(5, amount - 3);
-  function applyTpl(str) {
-    return str
-      .replace(/\[impact\]/g, `<strong>${impact}</strong>`)
-      .replace(/\[amount\]/g, `<strong>${amount}</strong>`)
-      .replace(/\[annual\]/g, `<strong>${annual}</strong>`)
-      .replace(/\[amount_low\]/g, `<strong>${amountLow}</strong>`);
-  }
 
   // Set meta
-  const causeMeta = CAUSES_META[state.cause];
+  const causeMeta   = CAUSES_META[state.cause];
   const profileMeta = PROFILES_META[state.profile];
   const channelMeta = CHANNELS_META[state.channel];
-  const cName = causeMeta ? (causeMeta[lang] || causeMeta.fr) : state.cause;
-  const pName = profileMeta ? (profileMeta[lang] || profileMeta.fr) : state.profile;
+  const cName  = causeMeta   ? (causeMeta[lang]   || causeMeta.fr)   : state.cause;
+  const pName  = profileMeta ? (profileMeta[lang] || profileMeta.fr) : state.profile;
   const chName = channelMeta ? (channelMeta[lang] || channelMeta.fr) : state.channel;
 
-  const badgeHtml = isAI
-    ? `<span class="ai-badge real">⚡ Pitch IA</span>`
-    : `<span class="ai-badge standard">📋 Pitch Standard</span>`;
-
-  document.getElementById('result-meta').innerHTML = `<span>${causeMeta?.emoji || '🎯'} ${cName}</span> <span>${pName}</span> <span>${chName}</span>${badgeHtml}`;
+  document.getElementById('result-meta').innerHTML =
+    `<span>${causeMeta?.emoji || '🎯'} ${cName}</span> <span>${pName}</span> <span>${chName}</span>` +
+    `<span class="ai-badge standard">⚡ Pitch Premium</span>`;
   document.getElementById('pitch-card-meta').textContent = `${cName} · ${pName} · ${chName}`;
 
-  // Success rate
   const rate = SUCCESS_RATES[state.profile] || 65;
   document.getElementById('success-rate-val').textContent = rate + '%';
 
-  // Fill pitch content
-  document.getElementById('pt-accroche').innerHTML = applyTpl(pitch.accroche || '');
-  document.getElementById('pt-argument').innerHTML = applyTpl(pitch.argument || '');
-  document.getElementById('pt-objection-q').innerHTML = applyTpl(pitch.objectionQ || '');
-  document.getElementById('pt-objection-a').innerHTML = applyTpl(pitch.objectionA || '');
-  document.getElementById('pt-cloture').innerHTML = applyTpl(pitch.cloture || '');
+  // Fill pitch content — pitch is already fully rendered strings from generateEnhancedTemplate
+  document.getElementById('pt-accroche').innerHTML    = pitch.accroche    || '';
+  document.getElementById('pt-argument').innerHTML    = pitch.argument    || '';
+  document.getElementById('pt-objection-q').innerHTML = pitch.objectionQ  || '';
+  document.getElementById('pt-objection-a').innerHTML = pitch.objectionA  || '';
+  document.getElementById('pt-cloture').innerHTML     = pitch.cloture     || '';
 
-  // Scores — use AI scores if available, else static SCORES
-  const scoreSet = isAI
-    ? [aiPitch.score_empathie || 75, aiPitch.score_clarte || 80, aiPitch.score_impact || 85, aiPitch.score_closing || 70]
-    : (SCORES[state.profile]?.[state.channel] || [75, 75, 75, 75]);
+  // Scores from pitch object
+  const scoreSet    = [pitch.score_empathie || 75, pitch.score_clarte || 80, pitch.score_impact || 85, pitch.score_closing || 70];
   const scoreLabels = ['empathie', 'clarte', 'impact', 'closing'];
   scoreLabels.forEach((lbl, i) => {
-    document.getElementById(`sv-${lbl}`).textContent = scoreSet[i] + '%';
-    document.getElementById(`sb-${lbl}`).style.width = '0%';
+    document.getElementById(`sv-${lbl}`).textContent  = scoreSet[i] + '%';
+    document.getElementById(`sb-${lbl}`).style.width  = '0%';
   });
 
-  // Tips — AI conseil takes priority
-  const tipsData = (isAI && aiPitch.conseil)
-    ? [aiPitch.conseil, ...(TIPS[lang]?.[state.profile]?.[state.channel] || TIPS.fr?.[state.profile]?.[state.channel] || []).slice(0, 2)]
-    : (TIPS[lang]?.[state.profile]?.[state.channel] || TIPS.fr?.[state.profile]?.[state.channel] || ['Adaptez votre ton au contexte.', 'Soyez concis et authentique.', 'Utilisez le prénom du donateur.']);
-  const tipsList = document.getElementById('tips-list');
-  tipsList.innerHTML = tipsData.map(t => `<li>${t}</li>`).join('');
+  // Tips — conseil from pitch engine first, then static tips
+  const tipsStatic = TIPS[lang]?.[state.profile]?.[state.channel]
+    || TIPS.fr?.[state.profile]?.[state.channel]
+    || ['Adaptez votre ton au contexte.', 'Soyez concis et authentique.', 'Utilisez le prénom du donateur.'];
+  const tipsData = pitch.conseil
+    ? [pitch.conseil, ...tipsStatic.slice(0, 2)]
+    : tipsStatic;
+  document.getElementById('tips-list').innerHTML = tipsData.map(t => `<li>${t}</li>`).join('');
 
   // Social proof counter
   const base = 147 + Math.floor(Math.random() * 53);
@@ -3126,12 +2161,9 @@ function showResult(aiPitch) {
   // Stagger reveal animations
   const sections = ['ps-accroche', 'ps-argument', 'ps-objection', 'ps-cloture'];
   sections.forEach((id, i) => {
-    setTimeout(() => {
-      document.getElementById(id)?.classList.add('revealed');
-    }, 200 + i * 320);
+    setTimeout(() => document.getElementById(id)?.classList.add('revealed'), 200 + i * 320);
   });
 
-  // Reveal score & tips with delay
   setTimeout(() => {
     document.getElementById('score-section')?.classList.add('revealed');
     setTimeout(() => {
@@ -3142,7 +2174,6 @@ function showResult(aiPitch) {
     setTimeout(() => document.getElementById('tips-section')?.classList.add('revealed'), 300);
   }, sections.length * 320 + 400);
 
-  // Update URL with params
   const params = new URLSearchParams({ cause: state.cause, profile: state.profile, channel: state.channel, lang });
   history.replaceState(null, '', '?' + params.toString());
 }
@@ -3285,9 +2316,7 @@ window.addEventListener('DOMContentLoaded', () => {
   updateSlider();
   restoreFromURL();
   // Restore API key
-  const savedKey = localStorage.getItem('anthropic_key');
-  const keyInput = document.getElementById('apiKeyInput');
-  if (savedKey && keyInput) keyInput.value = savedKey;
+
 });
 </script>
 </body>
