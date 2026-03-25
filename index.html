@@ -1665,126 +1665,126 @@ let state = {
 
 const HOOKS = {
   sceptique: [
-    "Bonsoir — je vais être direct avec vous avant même de vous parler de ma cause : vous avez des doutes sur les associations, non ?",
-    "Bonsoir. Je sais que vous avez probablement déjà fermé la porte à quelqu'un comme moi. Donnez-moi 60 secondes pour vous montrer pourquoi je mérite d'être différent.",
-    "Bonsoir. Une question avant tout : est-ce que vous avez déjà donné à une association et regretté votre décision ?",
-    "Bonsoir — je ne vais pas faire semblant que vous attendiez ma visite. Mais j'ai quelque chose de concret à vous montrer, pas juste des mots.",
-    "Bonsoir. La dernière chose que vous voulez, c'est un discours associatif. Alors je vais commencer par vos doutes, pas par mon pitch."
+    "Bonsoir. Je suis là pour vous parler d'une cause — mais avant ça, je veux savoir : qu'est-ce qui vous ferait croire à une association ?",
+    "Bonsoir. Vous avez l'air de quelqu'un qui ne se laisse pas avoir facilement. C'est exactement pour ça que je veux commencer par vos questions, pas mon discours.",
+    "Bonsoir. Je ne vais pas vous faire le pitch classique. Je vais vous montrer quelque chose d'abord. [sort le téléphone] Voilà nos comptes publics. Regardez.",
+    "Bonsoir. La plupart des gens qui sonnent à votre porte vous disent 'on fait un travail incroyable'. Moi je vais vous dire où est le risque avant de vous demander quoi que ce soit.",
+    "Bonsoir. Une vraie question : est-ce que quelqu'un vous a déjà dit comment fonctionnent vraiment les associations ? Pas le discours marketing — la réalité ?"
   ],
   ouvert: [
-    "Bonjour ! Vous avez l'air d'une personne qui suit l'actualité — j'ai une question qui me tient à cœur.",
-    "Bonjour ! Je ne vais pas vous faire attendre — j'ai quelque chose qui va vous toucher, je crois.",
-    "Bonjour ! Je travaille sur quelque chose d'assez extraordinaire et j'avais envie d'en parler à quelqu'un comme vous.",
-    "Bonjour ! Est-ce qu'il y a une cause dans le monde qui vous préoccupe plus que les autres en ce moment ?",
-    "Bonjour ! Vous avez une minute ? Je promets que ce que j'ai à vous dire en vaut la peine."
+    "Bonjour ! Il y a quelque chose qui vous touche dans le monde en ce moment — une cause, une injustice, quelque chose qui vous reste ?",
+    "Bonjour ! Je fais un travail un peu particulier — et la personne en face de moi change tout. Vous, j'ai l'impression que vous comprenez les choses différemment.",
+    "Bonjour ! Vous savez ce qui m'a donné envie de faire ce travail ? C'est une image que je n'arrive pas à oublier. Je peux vous la décrire en 20 secondes ?",
+    "Bonjour ! Je cherche des gens qui font la différence entre un don symbolique et un engagement réel. Vous en êtes, j'ai l'impression.",
+    "Bonjour ! Est-ce qu'il y a une cause pour laquelle vous vous dites 'si je pouvais faire quelque chose' ?"
   ],
   presse: [
-    "Bonjour — 45 secondes, c'est tout ce que je vous demande. Un fait, une action.",
-    "Bonjour. Je sais que vous êtes occupé. Voilà pourquoi je vais directement au fait :",
-    "Bonjour. Un chiffre. Une question. C'est tout.",
-    "Bonjour — je fais court : un fait qui devrait vous intéresser.",
-    "Bonjour. Pas de discours. Un fait concret et votre décision."
+    "Bonjour — 30 secondes. Un fait. Votre réponse.",
+    "Bonjour. Vous êtes occupé, je suis direct : [IMPACT_PREVIEW]. Voilà ce que ça représente en 1 mois.",
+    "Bonjour. Je vais pas tourner autour du pot — [IMPACT_PREVIEW]. C'est tout ce que je voulais vous dire.",
+    "Bonjour — je fais court. Une chose concrète. Une décision. C'est tout.",
+    "Bonjour. Deux données. Une décision. Vous êtes prêt ?"
   ],
   hostile: [
-    "Bonsoir. Je vois que ce n'est pas le bon moment — et franchement, je comprends.",
-    "Bonsoir. Vous n'avez pas à ouvrir la porte plus grand. Je mérite votre méfiance.",
-    "Bonsoir. Je ne vais pas faire semblant que les associations n'ont pas fait des erreurs. Certaines en ont fait.",
-    "Bonsoir. Votre réaction me dit que vous avez déjà eu une mauvaise expérience. Je voudrais comprendre.",
-    "Bonsoir. Je suis le dernier type que vous voulez voir à votre porte. Je sais. Donnez-moi quand même 30 secondes."
+    "Bonsoir. Je sais ce que vous pensez. Et vous avez probablement raison d'être méfiant.",
+    "Bonsoir. Je ne vais pas essayer de vous convaincre. Vraiment. Je veux juste comprendre ce qui vous a déçu.",
+    "Bonsoir. Si je suis honnête — certaines associations méritent votre méfiance. Pas toutes.",
+    "Bonsoir. Restez où vous êtes, je ne veux pas entrer. Je veux juste vous poser une question.",
+    "Bonsoir. Je ne vais rien vous demander ce soir. Je veux juste savoir ce qui s'est passé pour que vous soyez aussi méfiant."
   ],
   curieux: [
-    "Bonjour ! Vous aimez comprendre comment les choses fonctionnent vraiment ?",
-    "Bonjour ! J'ai des données assez fascinantes sur cette cause — ça vous intéresse ?",
-    "Bonjour ! Est-ce que vous avez déjà réfléchi à ce que représente concrètement un don mensuel ?",
-    "Bonjour ! Une question avant de commencer : qu'est-ce qui vous ferait vraiment confiance dans une association ?",
-    "Bonjour ! Je vais vous poser une question inhabituelle : si vous pouviez voir exactement où va votre argent, est-ce que ça changerait votre rapport au don ?"
+    "Bonjour ! Vous êtes du genre à vouloir comprendre comment ça fonctionne vraiment ?",
+    "Bonjour ! J'ai des données assez contre-intuitives sur [cause] — ça vous intéresse de les voir ?",
+    "Bonjour ! Question rapide : si vous pouviez voir exactement où va chaque euro d'un don, ça changerait votre rapport au don mensuel ?",
+    "Bonjour ! Je cherche quelqu'un qui pose les bonnes questions. Vous en êtes, non ?",
+    "Bonjour ! Vous savez ce que la plupart des gens ne savent pas sur [cause] ? Il y a un chiffre qui surprend tout le monde."
   ]
 };
 
 const CAUSE_IMPACTS = {
   humanitaire: [
-    "Et avec [IMPACT], un enfant mange ce soir.",
-    "[IMPACT] — pas une abstraction, un résultat documenté et certifié.",
-    "Chaque mois, [IMPACT]. C'est mesuré sur le terrain, pas dans un bureau.",
-    "[IMPACT] : c'est ce que produit votre prélèvement mensuel, tracé euro par euro.",
-    "Ce n'est pas une promesse — [IMPACT], vérifiable sur notre site aujourd'hui."
+    "Avec [MONTANT]€ par mois — soit [IMPACT_USER] — vous rendez possible ce que les gouvernements n'ont pas pu faire.",
+    "[IMPACT_USER] : c'est ce que produit votre prélèvement mensuel. Pas une estimation — une réalité mesurée.",
+    "Chaque mois, [IMPACT_USER]. Quelqu'un, quelque part, mange parce que vous avez dit oui.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. C'est moins qu'un restaurant. C'est plus qu'une promesse.",
+    "La question n'est pas si [IMPACT_USER] est possible. Elle l'est. La question c'est si vous voulez en faire partie."
   ],
   environnement: [
-    "[IMPACT] — séquestré, certifié Gold Standard, et visible sur notre tableau de bord.",
-    "Avec [IMPACT], une espèce menacée a une chance de plus cette année.",
-    "[IMPACT] : c'est le calcul précis d'impact de votre don mensuel sur notre système de suivi.",
-    "Chaque mois, [IMPACT]. Pas une estimation — une mesure certifiée par des tiers indépendants.",
-    "[IMPACT] : parce que les mots ne suffisent pas, on publie les données."
+    "Avec [MONTANT]€/mois, vous certifiez [IMPACT_USER] — Gold Standard, vérifiable, irrévocable.",
+    "[IMPACT_USER] : séquestré, certifié, et votre nom est associé à ça pour toujours.",
+    "Chaque mois, [IMPACT_USER]. Pas une compensation carbone abstraite — une mesure terrain certifiée.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. La planète ne peut pas vous remercier. Moi je peux.",
+    "Si [IMPACT_USER] n'est pas une raison d'agir maintenant, qu'est-ce qui l'est ?"
   ],
   social: [
-    "[IMPACT] — une famille qui dormait dehors a un toit ce soir grâce à ce calcul.",
-    "Avec [IMPACT], une personne sort de la précarité alimentaire pendant un mois.",
-    "[IMPACT] : c'est ce que nos équipes terrain ont calculé pour chaque euro que nous recevons.",
-    "Chaque mois, [IMPACT]. Derrière ce chiffre, des noms, des visages, des histoires.",
-    "[IMPACT] — nous publions les données de chaque programme. Vous pouvez vérifier."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — quelqu'un dort dans un endroit sûr ce soir.",
+    "[IMPACT_USER] : une réalité documentée, pas un slogan.",
+    "Chaque mois, [IMPACT_USER]. Derrière ce chiffre, il y a un prénom. Plusieurs.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. C'est le prix d'une pizza. C'est le prix d'une vie qui change.",
+    "La précarité ne se voit pas toujours. [IMPACT_USER], ça se voit."
   ],
   sante: [
-    "[IMPACT] — un accès aux soins dans un désert médical où l'État ne va plus.",
-    "Avec [IMPACT], un patient peut être suivi pendant un mois complet.",
-    "[IMPACT] : c'est l'impact calculé de votre don sur notre protocole de soins.",
-    "Chaque mois, [IMPACT]. Des milliers de personnes qui n'auraient pas eu accès autrement.",
-    "[IMPACT] — parce que la santé ne devrait pas dépendre du code postal."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — quelqu'un accède à un soin qui n'existait pas pour lui.",
+    "[IMPACT_USER] : ce que les déserts médicaux coûtent à ceux qui y vivent, vous pouvez l'atténuer.",
+    "Chaque mois, [IMPACT_USER]. Pas dans un pays lointain — en France, maintenant.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. La santé ne devrait pas être un privilège géographique.",
+    "Vous avez accès à un médecin en 10 minutes. [IMPACT_USER] pour ceux qui n'ont pas cette chance."
   ],
   education: [
-    "[IMPACT] — un enfant qui décrochait a maintenant un tuteur chaque semaine.",
-    "Avec [IMPACT], la fracture scolaire se réduit un peu.",
-    "[IMPACT] : c'est ce que nous avons calculé avec nos équipes pédagogiques.",
-    "Chaque mois, [IMPACT]. Parce que l'école publique ne peut plus tout faire seule.",
-    "[IMPACT] — mesurable, traçable, et publié dans notre rapport annuel."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — un enfant ne décroche pas.",
+    "[IMPACT_USER] : la fracture scolaire se répare à l'euro près. Voilà ce que le vôtre fait.",
+    "Chaque mois, [IMPACT_USER]. Un enfant qui repart avec de l'espoir plutôt qu'avec un échec.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. C'est le coût d'une heure de soutien scolaire par semaine.",
+    "Le code postal ne devrait pas décider de l'avenir d'un enfant. [IMPACT_USER] aide à corriger ça."
   ],
   animal: [
-    "[IMPACT] — un animal sauvé de la souffrance ce mois.",
-    "Avec [IMPACT], une espèce a de meilleures chances de survie.",
-    "[IMPACT] : le calcul précis de ce que votre don produit dans nos refuges.",
-    "Chaque mois, [IMPACT]. Des vies qui comptent.",
-    "[IMPACT] — parce que ceux qui ne peuvent pas parler ont besoin qu'on parle pour eux."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — un animal a une vie qu'il n'aurait pas eue.",
+    "[IMPACT_USER] : certifié par nos vétérinaires, documenté dans notre rapport mensuel.",
+    "Chaque mois, [IMPACT_USER]. Ceux qui ne peuvent pas parler ont besoin qu'on parle pour eux.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. Ce n'est pas sentimental — c'est mathématique.",
+    "La souffrance animale n'a pas de voix. [IMPACT_USER] lui en donne une."
   ],
   culture: [
-    "[IMPACT] — un patrimoine que vos enfants pourront encore voir.",
-    "Avec [IMPACT], une œuvre est restaurée et préservée pour les générations futures.",
-    "[IMPACT] : l'impact concret de votre soutien sur nos projets de préservation.",
-    "Chaque mois, [IMPACT]. La culture ne survit que si on choisit de la sauver.",
-    "[IMPACT] — parce que certaines choses ne peuvent pas être reproduites."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — un patrimoine que vous n'avez jamais vu survit pour vos enfants.",
+    "[IMPACT_USER] : restauré, préservé, et votre contribution est gravée dans le registre des donateurs.",
+    "Chaque mois, [IMPACT_USER]. Certaines choses ne peuvent pas être recréées une fois perdues.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. La culture ne survit que si on choisit activement de la sauver.",
+    "Dans 50 ans, quelqu'un verra ça parce que vous avez dit oui aujourd'hui. [IMPACT_USER]."
   ],
   recherche: [
-    "[IMPACT] — un pas de plus vers un traitement que des milliers attendent.",
-    "Avec [IMPACT], une équipe de chercheurs peut continuer ses expériences.",
-    "[IMPACT] : c'est ce que votre don finance concrètement dans nos laboratoires.",
-    "Chaque mois, [IMPACT]. La recherche ne s'arrête pas parce que les budgets publics manquent.",
-    "[IMPACT] — parce que la prochaine percée médicale a besoin de carburant."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — une équipe peut continuer à chercher la réponse.",
+    "[IMPACT_USER] : la prochaine percée médicale a besoin de carburant. C'est vous.",
+    "Chaque mois, [IMPACT_USER]. Quelqu'un attend ce traitement. Il n'existe pas encore. Vous aidez à le créer.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. La recherche ne s'arrête pas parce que les budgets publics manquent.",
+    "La prochaine grande découverte médicale sera financée par des milliers de gens ordinaires. [IMPACT_USER]."
   ],
   handicap: [
-    "[IMPACT] — une personne en situation de handicap gagne en autonomie ce mois.",
-    "Avec [IMPACT], une barrière d'accès tombe.",
-    "[IMPACT] : l'impact calculé de votre soutien sur notre programme d'inclusion.",
-    "Chaque mois, [IMPACT]. Parce que l'autonomie ne devrait pas dépendre des ressources.",
-    "[IMPACT] — des vies qui changent parce que quelqu'un a décidé d'agir."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — une barrière d'accès tombe.",
+    "[IMPACT_USER] : l'autonomie n'est pas un luxe. Votre don la rend possible.",
+    "Chaque mois, [IMPACT_USER]. L'inclusion ne se décrète pas — elle se finance.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. Parce que le handicap ne devrait pas être un plafond.",
+    "Une vie plus autonome, ça se construit. [IMPACT_USER], c'est une brique."
   ],
   ages: [
-    "[IMPACT] — une personne âgée isolée n'est plus seule ce mois.",
-    "Avec [IMPACT], la solitude recule un peu.",
-    "[IMPACT] : c'est ce que votre don produit dans nos programmes de lien social.",
-    "Chaque mois, [IMPACT]. Parce que vieillir seul ne devrait pas être une fatalité.",
-    "[IMPACT] — des visites, des appels, de la présence. C'est ce que ça finance."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — quelqu'un n'est plus seul.",
+    "[IMPACT_USER] : la solitude des personnes âgées est une épidémie invisible. Votre don la combat.",
+    "Chaque mois, [IMPACT_USER]. Une visite, un appel, une présence. C'est ce que ça finance.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. Vieillir seul ne devrait pas être une fatalité.",
+    "La prochaine génération vieillira. Ce qu'on construit maintenant — [IMPACT_USER] — on en bénéficiera tous."
   ],
   enfance: [
-    "[IMPACT] — un enfant vulnérable est protégé ce mois.",
-    "Avec [IMPACT], une enfance abîmée a une chance de se reconstruire.",
-    "[IMPACT] : le calcul précis de votre impact sur nos programmes de protection.",
-    "Chaque mois, [IMPACT]. Parce que chaque enfant mérite une chance.",
-    "[IMPACT] — des professionnels formés, des familles accompagnées, des vies stabilisées."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — une enfance abîmée a une chance de se reconstruire.",
+    "[IMPACT_USER] : chaque enfant mérite un point de départ. Votre don le rend possible.",
+    "Chaque mois, [IMPACT_USER]. Derrière ce chiffre, un enfant qui repart avec de l'espoir.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. Parce que l'enfance ne se rattrape pas.",
+    "Ce qu'on plante dans l'enfance pousse pour toujours. [IMPACT_USER], c'est ça."
   ],
   droits: [
-    "[IMPACT] — un droit fondamental défendu ce mois.",
-    "Avec [IMPACT], une personne persécutée est moins seule face à l'arbitraire.",
-    "[IMPACT] : l'impact concret de votre soutien sur nos actions de défense juridique.",
-    "Chaque mois, [IMPACT]. Parce que les droits ne se défendent pas sans moyens.",
-    "[IMPACT] — des avocats, des rapports, des plaidoyers. C'est ça, concrètement."
+    "Avec [MONTANT]€/mois — [IMPACT_USER] — un droit fondamental est défendu.",
+    "[IMPACT_USER] : les droits humains ne se défendent pas sans moyens. C'est vous, les moyens.",
+    "Chaque mois, [IMPACT_USER]. Derrière chaque victoire juridique, il y a des donateurs comme vous.",
+    "[IMPACT_USER] pour [MONTANT]€/mois. La liberté ne tombe pas du ciel — elle se finance.",
+    "Les droits que vous avez, quelqu'un les a défendus avant vous. [IMPACT_USER], c'est votre tour."
   ]
 };
 
@@ -1868,13 +1868,20 @@ function generateEnhancedTemplate(cause, profile, impact, amount, channel, lang)
   const amountLow = Math.max(5, amount - Math.round(amount * 0.2));
   const impactStr  = impact || `une action concrète de ${cause}`;
 
-  const accroche = pick(hooks);
-  const argument = pick(impacts).replace(/\[IMPACT\]/g, impactStr);
+  const accroche = pick(hooks).replace(/\[cause\]/g, cause);
+  const argument = pick(impacts)
+    .replace(/\[IMPACT_USER\]/g, impactStr)
+    .replace(/\[MONTANT\]/g, amount)
+    .replace(/\[IMPACT_PREVIEW\]/g, impactStr);
   const objection = objectionMap[profile] || objectionMap.sceptique;
-  const reponse   = pick2(objResponses).replace(/\[IMPACT\]/g, impactStr).replace(/\[cause\]/g, cause);
+  const reponse   = pick2(objResponses)
+    .replace(/\[IMPACT_USER\]/g, impactStr)
+    .replace(/\[IMPACT\]/g, impactStr)
+    .replace(/\[cause\]/g, cause);
   const cloture   = pick(closings)
     .replace(/\[AMOUNT\]/g,     amount)
     .replace(/\[AMOUNT_LOW\]/g, amountLow)
+    .replace(/\[IMPACT_USER\]/g, impactStr)
     .replace(/\[IMPACT\]/g,     impactStr);
 
   const scoreMap = {
