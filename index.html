@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title data-fr="Générateur de Pitch F2F — collecte.ai" data-en="F2F Pitch Generator — collecte.ai">Générateur de Pitch F2F — collecte.ai</title>
 <meta name="description" content="Générez un pitch F2F personnalisé en 60 secondes. Gratuit. 180 combinaisons."/>
+<meta property="og:title" content="Générateur de Pitch F2F — collecte.ai"/>
+<meta property="og:description" content="Générez un pitch F2F personnalisé en 60 secondes. 12 causes, 5 profils donateurs, 3 canaux. Gratuit et instantané."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://agencebabylonfundraising-lab.github.io/pitch-generator/"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Générateur de Pitch F2F — collecte.ai"/>
+<meta name="twitter:description" content="Votre pitch parfait en 60 secondes. 180 combinaisons cause/profil/canal. Testé sur 16 000+ donateurs."/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 /* ===== RESET & BASE ===== */
@@ -1218,7 +1225,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
       <button class="lang-btn active" onclick="setLang('fr')" id="lang-fr">FR</button>
       <button class="lang-btn" onclick="setLang('en')" id="lang-en">EN</button>
     </div>
-    <a href="https://babylon-fundraising.fr" class="back-link">
+    <a href="https://agencebabylonfundraising-lab.github.io/babylon-academy/" class="back-link">
       <span>←</span>
       <span data-fr="Tous nos outils" data-en="All tools">Tous nos outils</span>
     </a>
@@ -1236,13 +1243,13 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
       <span data-fr="Votre pitch parfait" data-en="Your perfect pitch">Votre pitch parfait</span><br/>
       <span class="accent" data-fr="en 60 secondes." data-en="in 60 seconds.">en 60 secondes.</span>
     </h1>
-    <p class="hero-sub" data-fr="Générez un pitch F2F personnalisé pour votre cause. Gratuit, instantané, testé sur 16,000+ donateurs." data-en="Generate a personalized F2F pitch for your cause. Free, instant, tested on 16,000+ real donors.">
-      Générez un pitch F2F personnalisé pour votre cause. Gratuit, instantané, testé sur 16,000+ donateurs.
+    <p class="hero-sub" data-fr="Générez un pitch F2F personnalisé pour votre cause. Gratuit, instantané, testé sur 16 549 vrais donateurs." data-en="Generate a personalized F2F pitch for your cause. Free, instant, tested on 16,549 real donors.">
+      Générez un pitch F2F personnalisé pour votre cause. Gratuit, instantané, testé sur 16 549 vrais donateurs.
     </p>
     <div class="trust-pills">
       <span class="trust-pill" data-fr="🆓 100% gratuit" data-en="🆓 100% free">🆓 100% gratuit</span>
       <span class="trust-pill" data-fr="⚡ Résultat instantané" data-en="⚡ Instant result">⚡ Résultat instantané</span>
-      <span class="trust-pill" data-fr="🧪 Basé sur 16,000+ vrais donateurs" data-en="🧪 Based on 16,000+ real donors">🧪 Basé sur 16,000+ vrais donateurs</span>
+      <span class="trust-pill" data-fr="🧪 Basé sur 16 549 vrais donateurs" data-en="🧪 Based on 16,549 real donors">🧪 Basé sur 16 549 vrais donateurs</span>
     </div>
     <div class="pitch-preview" id="pitch-preview">
       <div class="preview-line" id="prev-0">"Bonjour, j'ai une question rapide — est-ce que la crise au Sahel vous touche ?"</div>
@@ -2260,8 +2267,13 @@ function setLang(lang) {
   document.getElementById('lang-fr').classList.toggle('active', lang === 'fr');
   document.getElementById('lang-en').classList.toggle('active', lang === 'en');
   document.querySelectorAll('[data-fr]').forEach(el => {
-    const val = el.getAttribute(`data-${lang}`);
-    if (val !== null) el.innerHTML = val;
+    const val = el.getAttribute(`data-${lang}`) || el.getAttribute('data-fr');
+    if (val !== null) {
+      const clean = val
+        .replace(/&amp;lt;/g, '<').replace(/&amp;gt;/g, '>')
+        .replace(/&amp;amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      el.innerHTML = clean;
+    }
   });
   // Update input placeholders
   document.querySelectorAll('[data-placeholder-fr]').forEach(el => {
@@ -2317,6 +2329,7 @@ function restoreFromURL() {
 
 // ===== INIT =====
 window.addEventListener('DOMContentLoaded', () => {
+  setLang(localStorage.getItem('lang') || 'fr');
   rotatePreview();
   setInterval(rotatePreview, 4000);
   setInterval(updateRotatingPlaceholder, 2500);
